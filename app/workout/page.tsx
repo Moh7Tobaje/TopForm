@@ -1098,11 +1098,15 @@ export default function WorkoutPage() {
               <p className="text-gray-300 text-base md:text-lg">{t('workout.loading')}</p>
             ) : error ? (
               <p className="text-yellow-400 text-base md:text-lg">{error}</p>
-            ) : Object.keys(realWorkoutData).length > 0 ? (
+            ) : workoutSchedule ? (
               <p className="text-gray-300 text-base md:text-lg">
-                {t('workout.programInfo', { days: workoutSchedule?.numberOfDays || Object.keys(realWorkoutData).length })}
+                {t('workout.programInfo', { days: workoutSchedule.numberOfDays })}
               </p>
-            ) : null}
+            ) : (
+              <p className="text-gray-300 text-base md:text-lg">
+                {t('workout.noSchedule')}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <Button
@@ -1710,9 +1714,8 @@ export default function WorkoutPage() {
         )}
 
         {/* No Schedule State */}
-        {!loading && !error && Object.keys(realWorkoutData).length === 0 && (
-          null
-          /* <div className="text-center py-20">
+        {!loading && !error && !workoutSchedule && (
+          <div className="text-center py-20">
             <p className="text-gray-300 text-lg mb-4">
               {t('workout.noScheduleDesc')}
             </p>
@@ -1721,7 +1724,7 @@ export default function WorkoutPage() {
                 {t('workout.goToChat')}
               </Button>
             </Link>
-          </div> */
+          </div>
         )}
 
         {/* Workout Summary Modal */}
