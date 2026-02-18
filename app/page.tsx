@@ -1,353 +1,109 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { SignedIn, SignedOut, SignOutButton } from "@clerk/nextjs"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Bell,
-  Search,
-  Plus,
-  Home,
-  Clock,
-  Dumbbell,
-  User,
-  Video,
-  TrendingUp,
-  Target,
-  Shield,
-  ChevronRight,
-  Filter,
-  Upload,
-  Play,
-  BarChart3,
-  Activity,
-  LucideIcon
-} from "lucide-react"
-import { useLanguage } from '@/contexts/LanguageContext'
 
-// Import dashboard components
-import { StatsCard } from "@/components/dashboard/StatsCard"
-import { ExerciseCard } from "@/components/dashboard/ExerciseCard"
-import { AnalysisCard } from "@/components/dashboard/AnalysisCard"
-import { FloatingActionButton } from "@/components/dashboard/FloatingActionButton"
-import { BottomNavigation } from "@/components/dashboard/BottomNavigation"
-import { EmptyState } from "@/components/dashboard/EmptyState"
-import { SkeletonStats, SkeletonExercises, SkeletonAnalyses } from "@/components/dashboard/SkeletonComponents"
+export default function MVPCoachApp() {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
-// Import custom styles
-import "@/styles/dashboard.css"
+  const supportedExercises = ["Squat", "Deadlift", "Bench Press", "OHP", "Rows"]
 
-interface Analysis {
-  id: string
-  exercise: string
-  date: string
-  score: number
-  summary: string
-  icon: LucideIcon
-  color: string
-}
-
-interface Exercise {
-  id: string
-  name: string
-  icon: LucideIcon
-  color: string
-}
-
-export default function TopCoachApp() {
-  const { t, isRTL, language, setLanguage } = useLanguage()
-  const [isLoading, setIsLoading] = useState(true)
-  const [userName, setUserName] = useState("Athlete")
-  const [activeTab, setActiveTab] = useState("home")
-  const [stats, setStats] = useState({
-    videosAnalyzed: 0,
-    averageScore: 0,
-    issuesFixed: 0
-  })
-
-  const exercises: Exercise[] = [
-    { id: "squat", name: "Squat", icon: Target, color: "#E53935" },
-    { id: "deadlift", name: "Deadlift", icon: TrendingUp, color: "#4CAF50" },
-    { id: "bench", name: "Bench Press", icon: Activity, color: "#2196F3" },
-    { id: "ohp", name: "OHP", icon: Shield, color: "#FFC107" },
-    { id: "rows", name: "Rows", icon: BarChart3, color: "#9C27B0" }
-  ]
-
-  const [recentAnalyses, setRecentAnalyses] = useState<Analysis[]>([
-    {
-      id: "1",
-      exercise: "Squat",
-      date: "Today",
-      score: 78,
-      summary: "Good depth, slight forward lean",
-      icon: Target,
-      color: "#E53935"
-    },
-    {
-      id: "2",
-      exercise: "Deadlift",
-      date: "Yesterday",
-      score: 85,
-      summary: "Great form, maintain back position",
-      icon: TrendingUp,
-      color: "#4CAF50"
-    },
-    {
-      id: "3",
-      exercise: "Bench Press",
-      date: "2 days ago",
-      score: 92,
-      summary: "Excellent control and depth",
-      icon: Activity,
-      color: "#2196F3"
+  const handleFileSelect = (file: File) => {
+    if (file.size > 50 * 1024 * 1024) {
+      alert('File must be less than 50MB')
+      return
     }
-  ])
+    setSelectedFile(file)
+  }
 
-  useEffect(() => {
-    // Simulate loading data
+  const handleUploadAndAnalyze = () => {
+    if (!selectedFile) return
+    setIsUploading(true)
     setTimeout(() => {
-      setStats({
-        videosAnalyzed: 12,
-        averageScore: 78,
-        issuesFixed: 8
-      })
-      setIsLoading(false)
-    }, 1500)
-  }, [])
-
-  const handleAnalyzeVideo = () => {
-    // Navigate to video analysis page
-    console.log("Navigate to video analysis")
-  }
-
-  const handleExerciseClick = (exerciseId: string) => {
-    // Navigate to exercise-specific analysis
-    console.log(`Analyze ${exerciseId}`)
-  }
-
-  const handleAnalysisClick = (analysisId: string) => {
-    // Navigate to analysis details
-    console.log(`View analysis ${analysisId}`)
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0D0D0D]">
-        {/* Loading Header */}
-        <header className="fixed top-0 w-full z-50 bg-[#0D0D0D]/95 backdrop-blur-md border-b border-[#1A1A1A]">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 skeleton rounded-full"></div>
-              <div className="w-20 h-6 skeleton rounded"></div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-8 skeleton rounded-full"></div>
-              <div className="w-8 h-8 skeleton rounded-full"></div>
-              <div className="w-8 h-8 skeleton rounded-full"></div>
-            </div>
-          </div>
-        </header>
-
-        {/* Loading Content */}
-        <main className="pt-16 pb-20">
-          <section className="bg-gradient-to-br from-[#B71C1C] to-[#0D0D0D] py-12 px-4">
-            <div className="container mx-auto">
-              <div className="h-20 skeleton rounded-xl mb-4"></div>
-              <div className="h-12 skeleton rounded-lg w-64"></div>
-            </div>
-          </section>
-
-          <div className="container mx-auto px-4 py-8 space-y-8">
-            <SkeletonStats />
-            <SkeletonExercises />
-            <SkeletonAnalyses />
-          </div>
-        </main>
-      </div>
-    )
+      setIsUploading(false)
+      alert('Analysis complete!')
+    }, 2000)
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-white">
+    <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 bg-[#0D0D0D]/95 backdrop-blur-md border-b border-[#1A1A1A]">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#E53935] to-[#B71C1C] rounded-full flex items-center justify-center">
-              <Video className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold">FormAI</span>
+      <header className="p-4 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+            <span className="text-white font-bold text-sm">FA</span>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="text-[#9E9E9E] hover:text-white">
-              <Search className="w-5 h-5" />
-            </Button>
-            
-            <Button variant="ghost" size="sm" className="relative text-[#9E9E9E] hover:text-white">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-[#E53935] rounded-full pulse-dot"></span>
-            </Button>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="p-0">
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback className="bg-[#E53935] text-white font-bold">
-                      {userName[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-[#1A1A1A] border-[#2A2A2A]">
-                <DropdownMenuItem className="text-white hover:bg-[#2A2A2A]">
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-[#2A2A2A]">
-                  Settings
-                </DropdownMenuItem>
-                <SignedIn>
-                  <SignOutButton>
-                    <DropdownMenuItem className="text-white hover:bg-[#2A2A2A]">
-                      Logout
-                    </DropdownMenuItem>
-                  </SignOutButton>
-                </SignedIn>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <span className="font-semibold">FormAI</span>
         </div>
+        <Button variant="ghost" size="sm" className="text-gray-400">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4 4m4-4H3m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </Button>
       </header>
 
       {/* Main Content */}
-      <main className="pt-16 pb-20">
-        {/* Welcome Section */}
-        <section className="welcome-gradient py-12 px-4">
-          <div className="container mx-auto">
-            <div className="flex items-center justify-between">
-              <div className="fade-in-up">
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  Welcome back, {userName}
-                </h1>
-                <p className="text-[#9E9E9E] text-lg">
-                  Ready to perfect your form today?
+      <main className="flex-1 flex items-center justify-center p-8">
+        <div className="max-w-2xl w-full text-center space-y-8">
+          {/* Title */}
+          <div>
+            <h1 className="text-4xl font-bold mb-4">Analyze Your Form</h1>
+            <p className="text-gray-400">Upload a workout video to get AI feedback</p>
+          </div>
+
+          {/* Upload Area */}
+          <div className="border-2 border-dashed border-gray-600 rounded-xl p-12">
+            <input
+              type="file"
+              accept="video/mp4,video/quicktime,video/mov"
+              onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+              className="hidden"
+              id="file-input"
+            />
+            <label htmlFor="file-input" className="cursor-pointer">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center">
+                  {selectedFile ? (
+                    <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3" />
+                    </svg>
+                  ) : (
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0118.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    </svg>
+                  )}
+                </div>
+                <p className="text-lg">
+                  {selectedFile ? selectedFile.name : 'Drag video here or click to upload'}
                 </p>
+                <p className="text-sm text-gray-500">MP4, MOV (max 50MB)</p>
               </div>
-              <Button 
-                size="lg" 
-                onClick={handleAnalyzeVideo}
-                className="bg-[#E53935] hover:bg-[#B71C1C] text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 ripple-button fade-in-up stagger-2"
-              >
-                <Upload className="w-5 h-5 mr-2" />
-                Analyze New Video
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        <div className="container mx-auto px-4 py-8 space-y-8">
-          {/* Stats Cards */}
-          <div className="fade-in-up stagger-3">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatsCard 
-                title="Videos Analyzed" 
-                value={stats.videosAnalyzed} 
-                icon={Video} 
-                color="#E53935"
-                delay={0}
-              />
-              <StatsCard 
-                title="Average Score" 
-                value={`${stats.averageScore}%`} 
-                icon={BarChart3} 
-                color="#4CAF50"
-                delay={100}
-              />
-              <StatsCard 
-                title="Issues Fixed" 
-                value={stats.issuesFixed} 
-                icon={Shield} 
-                color="#2196F3"
-                delay={200}
-              />
-            </div>
+            </label>
           </div>
 
-          {/* Quick Actions */}
-          <section className="fade-in-up stagger-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Quick Analyze</h2>
-              <Button variant="ghost" className="text-[#E53935] hover:text-[#B71C1C]">
-                View All
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-            
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-              {exercises.map((exercise) => (
-                <ExerciseCard
-                  key={exercise.id}
-                  name={exercise.name}
-                  icon={exercise.icon}
-                  color={exercise.color}
-                  onClick={() => handleExerciseClick(exercise.id)}
-                />
+          {/* Exercises */}
+          <div>
+            <p className="text-sm text-gray-500 mb-3">Supported exercises:</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {supportedExercises.map((exercise) => (
+                <span key={exercise} className="px-3 py-1 bg-gray-800 text-gray-300 rounded-full text-sm">
+                  {exercise}
+                </span>
               ))}
             </div>
-          </section>
+          </div>
 
-          {/* Recent Analyses */}
-          <section className="fade-in-up stagger-5">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Recent Analyses</h2>
-              <Button variant="ghost" className="text-[#9E9E9E] hover:text-white">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </Button>
-            </div>
-
-            {recentAnalyses.length > 0 ? (
-              <div className="space-y-4">
-                {recentAnalyses.map((analysis) => (
-                  <AnalysisCard
-                    key={analysis.id}
-                    exercise={analysis.exercise}
-                    date={analysis.date}
-                    score={analysis.score}
-                    summary={analysis.summary}
-                    icon={analysis.icon}
-                    color={analysis.color}
-                    onClick={() => handleAnalysisClick(analysis.id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState 
-                onButtonClick={handleAnalyzeVideo}
-              />
-            )}
-          </section>
+          {/* Button */}
+          <Button
+            onClick={handleUploadAndAnalyze}
+            disabled={!selectedFile || isUploading}
+            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-700 text-white px-12 py-4 text-lg font-semibold rounded-lg w-full max-w-md"
+          >
+            {isUploading ? 'Analyzing...' : 'Upload and Analyze'}
+          </Button>
         </div>
       </main>
-
-      {/* Floating Action Button */}
-      <FloatingActionButton onClick={handleAnalyzeVideo} />
-
-      {/* Bottom Navigation */}
-      <BottomNavigation 
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
     </div>
   )
 }
