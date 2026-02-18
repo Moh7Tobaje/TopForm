@@ -613,8 +613,8 @@ export default function TopCoachApp() {
                             </p>
                           </div>
                         </div>
-                        <div className="flex justify-center">
-                          <Button size="lg" asChild className="text-lg md:text-xl px-8 py-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-2xl hover:shadow-red-500/50 transform hover:scale-105 transition-all duration-300 border-2 border-red-500/30 glow-red">
+                        <div className="flex justify-center items-center">
+                          <Button size="lg" asChild className="text-2xl md:text-3xl px-12 py-8 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-2xl hover:shadow-red-500/50 transform hover:scale-105 transition-all duration-300 border-2 border-red-500/30 glow-red min-w-[300px] min-h-[80px]">
                             <Link href="/analyze-performance">
                               Analyze Performance
                             </Link>
