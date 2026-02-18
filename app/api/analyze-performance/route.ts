@@ -112,14 +112,14 @@ Provide:
 
 Be concise and actionable. If the video or context suggests the user prefers Arabic, respond in Arabic; otherwise use English.`
 
-  const analyzeRes = await twelvelabsFetch('/generate', apiKey, {
+  const analyzeRes = await twelvelabsFetch('/analyze', apiKey, {
     method: 'POST',
     body: JSON.stringify({
-      model_name: 'pegasus1.2',
-      prompt,
       video_id: videoId,
-      max_tokens: 1024,
+      prompt,
+      stream: false,
       temperature: 0.3,
+      max_tokens: 4096,
     }),
   })
 
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
     const videoUrl = typeof videoUrlRaw === 'string' ? videoUrlRaw.trim() : ''
     const useUrl = /^https?:\/\/.+\..+/.test(videoUrl)
 
-    let videoId: string
+    let videoId: string = ''
 
     if (useUrl) {
       // Handle URL upload
