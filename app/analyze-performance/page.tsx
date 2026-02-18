@@ -93,7 +93,7 @@ export default function AnalyzePerformancePage() {
       const formData = new FormData()
       formData.append('video', videoBlob, 'workout-video.webm')
       
-      const response = await fetch('/api/workout/analyze-video', {
+      const response = await fetch('/api/analyze-performance', {
         method: 'POST',
         body: formData,
       })
@@ -118,12 +118,12 @@ export default function AnalyzePerformancePage() {
     setAnalyzeStep('analyzing')
     
     try {
-      const response = await fetch('/api/workout/analyze-video', {
+      const response = await fetch('/api/analyze-performance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ videoUrl: url }),
+        body: JSON.stringify({ video_url: url }),
       })
       
       if (!response.ok) {
