@@ -430,9 +430,6 @@ export default function TopCoachApp() {
     setTimeout(() => {
       let response = ""
       switch (action) {
-        case "Meal Suggestions":
-          response = t('ai.mealResponse')
-          break
         default:
           response = t('ai.defaultResponse')
       }
@@ -654,9 +651,6 @@ export default function TopCoachApp() {
                           </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-3">
-                          <Button size="lg" variant="outline" onClick={() => handleQuickAction("Meal Suggestions")} className="text-sm md:text-base px-6 py-3 border-primary/30 transition-all duration-200">
-                            {t('actions.mealSuggestions')}
-                          </Button>
                           <Button size="lg" variant="outline" asChild className="text-sm md:text-base px-6 py-3 border-primary/30 transition-all duration-200">
                             <Link href="/analyze-performance">
                               Analyze Performance
@@ -664,25 +658,6 @@ export default function TopCoachApp() {
                           </Button>
                         </div>
                       </div>
-                      <div className="space-y-6">
-                        <div className="bg-gradient-to-br from-card to-card/50 p-6 md:p-8 rounded-2xl border border-border shadow-xl backdrop-blur-sm">
-                          <div className="flex items-center justify-between mb-4">
-                            <span className="font-bold text-lg md:text-xl text-white">Today's Summary</span>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4 md:gap-6">
-                          <div className="bg-gradient-to-br from-primary/10 to-card/50 p-4 md:p-6 rounded-2xl border border-primary/20 text-center transition-all duration-300">
-                            <Target className="w-6 h-6 md:w-8 md:h-8 text-primary mx-auto mb-3" />
-                            <p className="text-sm md:text-base font-bold text-white mb-1">{t('hero.calories')}</p>
-                            <p className="text-lg md:text-2xl font-black text-white mb-2">Coming Soon</p>
-                            <p className="text-xs md:text-sm text-muted-foreground">{t('hero.requiredConsumed')}</p>
-                          </div>
-                          <div className="bg-gradient-to-br from-secondary to-card/50 p-4 md:p-6 rounded-2xl border border-border/50 text-center transition-all duration-300">
-                            <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-primary mx-auto mb-3" />
-                            <p className="text-sm md:text-base font-bold text-white mb-1">{t('hero.streak')}</p>
-                            <p className="text-xs md:text-sm text-muted-foreground">days</p>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </CardContent>
