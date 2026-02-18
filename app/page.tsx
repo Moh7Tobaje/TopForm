@@ -33,7 +33,6 @@ import {
   Zap,
   Target,
   TrendingUp,
-  Users,
   MessageCircle,
   Dumbbell,
   Apple,
@@ -58,34 +57,6 @@ interface ChatMessage {
   type?: "text" | "action"
 }
 
-interface CommunityPost {
-  id: string
-  user: {
-    name: string
-    avatar: string
-    level: number
-    badge?: string
-  }
-  content: string
-  image?: string
-  timestamp: Date
-  likes: number
-  comments: number
-  isLiked: boolean
-  type: "achievement" | "workout" | "motivation" | "question"
-}
-
-interface ForumTopic {
-  id: string
-  title: string
-  author: string
-  avatar: string
-  replies: number
-  views: number
-  lastActivity: Date
-  category: string
-  isPinned?: boolean
-}
 
 interface LeaderboardUser {
   id: string
@@ -107,97 +78,8 @@ export default function TopCoachApp() {
   const triggerComingSoon = () => {
     setComingSoonVisible(true)
   }
-  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([
-    {
-      id: "1",
-      user: { name: "Sarah Chen", avatar: "/fit-woman-outdoors.png", level: 15, badge: "Consistency King" },
-      content:
-        "Just completed my 30-day workout streak! The AI coach really helped me stay motivated. Who else is on a streak?",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      likes: 24,
-      comments: 8,
-      isLiked: false,
-      type: "achievement",
-    },
-    {
-      id: "2",
-      user: { name: "Mike Rodriguez", avatar: "/professional-man.png", level: 12 },
-      content:
-        "Quick question - what's everyone's favorite post-workout meal? Looking for some new ideas to fuel my recovery!",
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      likes: 15,
-      comments: 12,
-      isLiked: true,
-      type: "question",
-    },
-    {
-      id: "3",
-      user: { name: "Emma Thompson", avatar: "/woman-runner.png", level: 18, badge: "Marathon Ready" },
-      content: "Morning workout done! 5K run in 22 minutes - new personal best! The weather was perfect today.",
-      image: "/morning-run-scenery.png",
-      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
-      likes: 31,
-      comments: 6,
-      isLiked: false,
-      type: "workout",
-    },
-    {
-      id: "4",
-      user: { name: "Alex Kim", avatar: "/fitness-enthusiast.png", level: 8 },
-      content: "Keep pushing your limits every day!",
-      timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000),
-      likes: 42,
-      comments: 15,
-      isLiked: true,
-      type: "motivation",
-    },
-  ])
-
-  const [forumTopics] = useState<ForumTopic[]>([
-    {
-      id: "1",
-      title: "Best exercises for building core strength?",
-      author: "FitnessNewbie",
-      avatar: "/beginner-avatar.png",
-      replies: 23,
-      views: 156,
-      lastActivity: new Date(Date.now() - 1 * 60 * 60 * 1000),
-      category: "Strength Training",
-      isPinned: false,
-    },
-    {
-      id: "2",
-      title: "Weekly Challenge: 10,000 Steps Daily",
-      author: "TopCoachTeam",
-      avatar: "/images/top-coach-logo.svg",
-      replies: 87,
-      views: 432,
-      lastActivity: new Date(Date.now() - 30 * 1000),
-      category: "Challenges",
-      isPinned: true,
-    },
-    {
-      id: "3",
-      title: "Meal prep ideas for busy professionals",
-      author: "HealthyEater",
-      avatar: "/nutrition-expert.png",
-      replies: 34,
-      views: 289,
-      lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      category: "Nutrition"
-    },
-    {
-      id: "4",
-      title: "How to stay motivated during winter months?",
-      author: "WinterWarrior",
-      avatar: "/winter-athlete.png",
-      replies: 45,
-      views: 201,
-      lastActivity: new Date(Date.now() - 3 * 60 * 60 * 1000),
-      category: "Motivation",
-    },
-  ])
-
+  
+  
   const [leaderboard] = useState<LeaderboardUser[]>([
     {
       id: "1",
@@ -267,20 +149,7 @@ export default function TopCoachApp() {
 
 
 
-  const toggleLike = (postId: string) => {
-    setCommunityPosts((posts) =>
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              isLiked: !post.isLiked,
-              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
-            }
-          : post,
-      ),
-    )
-  }
-
+  
   const weeklyWorkoutData = [
     { day: "Mon", workouts: 2, calories: 450, duration: 45 },
     { day: "Tue", workouts: 1, calories: 320, duration: 30 },
@@ -500,9 +369,6 @@ export default function TopCoachApp() {
               </Button>
               <Button variant="ghost" asChild>
               </Button>
-              <Button variant="ghost" onClick={triggerComingSoon}>
-                {t('nav.community')}
-              </Button>
             </div>
             <div className="flex items-center gap-2">
               <DropdownMenu>
@@ -699,10 +565,6 @@ export default function TopCoachApp() {
             </Button>
             <Button variant="ghost" size="sm" asChild className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
             </Button>
-            <Button variant="ghost" size="sm" onClick={triggerComingSoon} className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
-              <Users className="w-5 h-5 transition-all duration-200" />
-              <span className="text-xs font-semibold transition-colors duration-200">{t('nav.community')}</span>
-            </Button>
           </div>
         </div>
 
@@ -714,7 +576,7 @@ export default function TopCoachApp() {
           >
             <div className="text-center px-8 py-12 rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 shadow-2xl backdrop-blur-md max-w-md w-full transform transition-all duration-300 hover:scale-[1.02]">
               <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-                <Users className="w-8 h-8 text-white" />
+                <Bot className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white bg-gradient-to-r from-white to-primary bg-clip-text text-transparent">{t('comingSoon.title')}</h3>
               <p className="text-base md:text-lg text-white/80 leading-relaxed">{t('comingSoon.subtitle')}</p>
@@ -735,58 +597,7 @@ export default function TopCoachApp() {
     )
   }
 
-  // Community Tab
-  if (activeTab === "community") {
-    return (
-      <div className="min-h-screen p-4 pt-20">
-        <div className="container mx-auto max-w-4xl">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold font-[var(--font-heading)]">Community Forum</h1>
-              <p className="text-muted-foreground">Connect with Other Fitness Enthusiasts</p>
-            </div>
-            <Button onClick={() => setActiveTab("home")} variant="outline">
-              Back to Home
-            </Button>
-          </div>
-
-          <div className="grid gap-6">
-            {forumTopics.map((topic) => (
-              <Card
-                key={topic.id}
-                className="gradient-black-gray border-border transition-all duration-300 hover:glow-silver"
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
-                        <AvatarImage src={topic.avatar || "/placeholder.svg"} />
-                        <AvatarFallback>{topic.author[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="text-xl font-semibold">{topic.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {topic.author} • {topic.replies} replies • {topic.views} views
-                        </p>
-                      </div>
-                    </div>
-                    {topic.isPinned && (
-                      <Badge className="gradient-red-silver text-white border-0">
-                        <Pin className="w-4 h-4 mr-2" />
-                        Pinned
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">{topic.lastActivity.toLocaleString()}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
+  
 
 
   return null

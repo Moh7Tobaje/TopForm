@@ -45,7 +45,6 @@ export default function ProfilePage() {
     workoutReminders: true,
     mealReminders: true,
     progressUpdates: true,
-    communityActivity: false,
     weeklyReports: true,
     achievements: true,
   })
@@ -351,7 +350,6 @@ export default function ProfilePage() {
                         {key === "workoutReminders" && "Get reminded about your scheduled workouts"}
                         {key === "mealReminders" && "Receive notifications for meal times"}
                         {key === "progressUpdates" && "Weekly progress summaries and insights"}
-                        {key === "communityActivity" && "Updates from your fitness community"}
                         {key === "weeklyReports" && "Comprehensive weekly fitness reports"}
                         {key === "achievements" && "Celebrate your fitness milestones"}
                       </p>
@@ -392,14 +390,7 @@ export default function ProfilePage() {
                     </Select>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border/20">
-                    <div>
-                      <h3 className="font-medium">Activity Sharing</h3>
-                      <p className="text-sm text-muted-foreground">Share your workouts with the community</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
+                  
                   <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border/20">
                     <div>
                       <h3 className="font-medium">Data Analytics</h3>
