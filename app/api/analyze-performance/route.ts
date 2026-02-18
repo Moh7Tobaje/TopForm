@@ -13,9 +13,19 @@ async function twelvelabsFetch(
 ) {
   const { method = 'GET', body, headers = {} } = opts
   const url = `${TWELVELABS_BASE}${path}`
-  if (body && typeof body === 'string') headers['Content-Type'] = 'application/json'
+  
+  // Use x-api-key header instead of Authorization
+  const defaultHeaders: Record<string, string> = {
+    'x-api-key': apiKey,
+    ...headers
+  }
+  
+  if (body && typeof body === 'string') {
+    defaultHeaders['Content-Type'] = 'application/json'
+  }
+  
   // do not set Content-Type for FormData; fetch will set multipart boundary
-  const res = await fetch(url, { method, headers, body: body || undefined })
+  const res = await fetch(url, { method, headers: defaultHeaders, body: body || undefined })
   return res
 }
 
@@ -124,6 +134,13 @@ Be concise and actionable. If the video or context suggests the user prefers Ara
 
 export async function POST(request: NextRequest) {
   try {
+    // Debug logging
+    console.log('=== Twelve Labs API Debug ===')
+    console.log('API Key exists:', !!process.env.TWELVE_LABS_API_KEY)
+    console.log('API Key starts with:', process.env.TWELVE_LABS_API_KEY?.substring(0, 10))
+    console.log('API Key length:', process.env.TWELVE_LABS_API_KEY?.length)
+    console.log('API URL:', TWELVELABS_BASE)
+    
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -132,6 +149,27 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.TWELVE_LABS_API_KEY
     if (!apiKey || !apiKey.trim()) {
       return NextResponse.json({ error: 'Twelve Labs API key not configured' }, { status: 500 })
+    }
+
+    // Test API key with a simple request first
+    console.log('Testing API key...')
+    const testRes = await fetch(`${TWELVELABS_BASE}/indexes?page_limit=1`, {
+      method: 'GET',
+      headers: {
+        'x-api-key': apiKey,
+      },
+    })
+    
+    console.log('Test response status:', testRes.status)
+    console.log('Test response headers:', Object.fromEntries(testRes.headers.entries()))
+    
+    if (!testRes.ok) {
+      const errorText = await testRes.text()
+      console.log('Test error response:', errorText)
+      return NextResponse.json({ 
+        error: `API Key validation failed: ${testRes.status}`,
+        details: errorText 
+      }, { status: 401 })
     }
 
     const formData = await request.formData()
