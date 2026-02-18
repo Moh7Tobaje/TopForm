@@ -351,17 +351,6 @@ export default function TopCoachApp() {
         <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-md border-b border-border">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="relative logo-container">
-                <Image
-                  src="/images/top-coach-logo.svg"
-                  alt="Top Coach"
-                  width={40}
-                  height={40}
-                  className="rounded-xl border-2 border-[#cc2e2f]/30 logo-header shadow-lg md:w-12 md:h-12"
-                  priority
-                />
-                <div className="absolute -bottom-1 -right-1 w-2 h-2 md:w-3 md:h-3 bg-[#cc2e2f] rounded-full border-2 border-background animate-pulse"></div>
-              </div>
               <span className="text-lg md:text-xl font-bold font-[var(--font-heading)] bg-gradient-to-r from-[#cc2e2f] to-white bg-clip-text text-transparent">Top Coach</span>
             </div>
             <div className="hidden md:flex space-x-6">
@@ -433,7 +422,7 @@ export default function TopCoachApp() {
                 {t('hero.badge')}
               </Badge>
               <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold font-[var(--font-heading)] mb-6 md:mb-8 bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-2xl leading-tight tracking-tight">
-                <span className="block animate-pulse">{t('hero.title')}</span>
+                <span className="block">{t('hero.title')}</span>
                 <span className="block text-primary drop-shadow-lg mt-2 md:mt-4">{t('hero.subtitle')}</span>
               </h1>
               <SignedOut>
@@ -462,34 +451,35 @@ export default function TopCoachApp() {
               <div
                 className={`transition-all duration-800 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
               >
-                <Card className="max-w-5xl mx-auto gradient-black-gray border-border glow-silver backdrop-blur-md bg-black/70 transition-all duration-300 shadow-2xl">
-                  <CardContent className="p-6 md:p-10">
-                    <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-                      <div className="space-y-6">
-                        <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-primary/10 to-transparent rounded-xl border border-primary/20">
-                          <Avatar className="border-3 border-primary w-14 h-14 md:w-16 md:h-16 shadow-lg">
-                            <AvatarImage src="/images/top-coach-logo.svg" className="rounded-full" />
-                            <AvatarFallback className="bg-gradient-to-br from-[#cc2e2f] to-[#cc2e2f] text-white font-bold text-xl">TC</AvatarFallback>
-                          </Avatar>
-                          <div className="text-left">
-                            <p className="font-bold text-lg md:text-xl text-white">{t('hero.aiCoach')}</p>
-                            <p className="text-sm md:text-base text-primary font-medium flex items-center">
-                              <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-                              {t('hero.onlineNow')}
-                            </p>
+                <SignedIn>
+                  <Card className="max-w-5xl mx-auto gradient-black-gray border-border glow-silver backdrop-blur-md bg-black/70 transition-all duration-300 shadow-2xl">
+                    <CardContent className="p-6 md:p-10">
+                      <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+                        <div className="space-y-6">
+                          <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-primary/10 to-transparent rounded-xl border border-primary/20">
+                            <Avatar className="border-3 border-primary w-14 h-14 md:w-16 md:h-16 shadow-lg">
+                              <AvatarFallback className="bg-gradient-to-br from-[#cc2e2f] to-[#cc2e2f] text-white font-bold text-xl">TC</AvatarFallback>
+                            </Avatar>
+                            <div className="text-left">
+                              <p className="font-bold text-lg md:text-xl text-white">{t('hero.aiCoach')}</p>
+                              <p className="text-sm md:text-base text-primary font-medium flex items-center">
+                                <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                                {t('hero.onlineNow')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex justify-center items-center mt-8">
+                            <Button size="lg" asChild className="text-3xl md:text-4xl px-16 py-10 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-2xl hover:shadow-red-500/50 transform hover:scale-105 transition-all duration-300 border-2 border-red-500/30 glow-red min-w-[400px] min-h-[100px]">
+                              <Link href="/analyze-performance">
+                                Analyze Performance
+                              </Link>
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex justify-center items-center mt-8">
-                          <Button size="lg" asChild className="text-3xl md:text-4xl px-16 py-10 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-2xl hover:shadow-red-500/50 transform hover:scale-105 transition-all duration-300 border-2 border-red-500/30 glow-red min-w-[400px] min-h-[100px]">
-                            <Link href="/analyze-performance">
-                              Analyze Performance
-                            </Link>
-                          </Button>
-                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </SignedIn>
               </div>
             )}
           </div>
@@ -546,13 +536,7 @@ export default function TopCoachApp() {
           <div className="flex justify-around py-3 px-2">
             <Button variant="ghost" size="sm" onClick={() => setActiveTab("home")} className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
               <div className="relative">
-                <Image
-                  src="/images/top-coach-logo.svg"
-                  alt="Home"
-                  width={24}
-                  height={24}
-                  className="rounded-full border border-[#cc2e2f]/30 logo-message transition-all duration-200"
-                />
+                <div className="w-6 h-6 bg-gradient-to-br from-[#cc2e2f] to-[#cc2e2f] rounded-full border border-[#cc2e2f]/30 transition-all duration-200"></div>
                 <div className="absolute -bottom-1 -right-1 w-1.5 h-1.5 bg-[#cc2e2f] rounded-full border border-card animate-pulse"></div>
               </div>
               <span className="text-xs font-semibold group-hover:text-[#cc2e2f] transition-colors duration-200">{t('nav.home')}</span>

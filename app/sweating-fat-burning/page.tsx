@@ -30,16 +30,7 @@ export default function SweatingFatBurning() {
       <header className="border-b border-[#2d2e2e]/30 bg-[#091110]/90 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/images/top-coach-logo.svg"
-              alt="Top Coach"
-              width={40}
-              height={40}
-              className="h-10 w-10"
-            />
-            <span className="text-xl font-bold bg-gradient-to-r from-[#e3372e] to-white bg-clip-text text-transparent">
-              Top Coach
-            </span>
+            <span className="text-xl font-bold text-primary">TopCoach</span>
           </Link>
         </div>
       </header>

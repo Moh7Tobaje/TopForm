@@ -71,14 +71,7 @@ export default function ProfilePage() {
             </Link>
             <div className="flex items-center gap-3">
               <div className="relative logo-container">
-                <Image
-                  src="/images/top-coach-logo.svg"
-                  alt="Top Coach"
-                  width={36}
-                  height={36}
-                  className="rounded-xl border-2 border-[#e3372e]/30 logo-header shadow-lg"
-                />
-                <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-[#e3372e] rounded-full border-2 border-background animate-pulse"></div>
+                <span className="text-xl font-bold text-primary">TopCoach</span>
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-[#e3372e] to-white bg-clip-text text-transparent">
                 Profile & Settings

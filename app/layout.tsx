@@ -62,8 +62,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="TopCoach" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/123.svg" />
-        <link rel="icon" href="/123.svg" />
         <style>{`
 html {
   font-family: ${dmSans.style.fontFamily};

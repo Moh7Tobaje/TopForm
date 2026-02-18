@@ -27,11 +27,6 @@ const MainNavigation: React.FC = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
-          <img 
-            src="/images/top-coach-logo.svg" 
-            alt="TopCoach Logo" 
-            className="h-10 w-10" 
-          />
           <span className="text-xl font-bold text-primary">TopCoach</span>
         </Link>
 
