@@ -6,6 +6,16 @@ import { Button } from "@/components/ui/button"
 export default function MVPCoachApp() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [showResult, setShowResult] = useState(false)
+  const [analysisResult, setAnalysisResult] = useState<{
+    score: number
+    feedback: string
+    issues: string[]
+  }>({
+    score: 0,
+    feedback: '',
+    issues: []
+  })
 
   const supportedExercises = ["Squat", "Deadlift", "Bench Press", "OHP", "Rows"]
 
@@ -20,10 +30,29 @@ export default function MVPCoachApp() {
   const handleUploadAndAnalyze = () => {
     if (!selectedFile) return
     setIsUploading(true)
+    
+    // Simulate analysis
     setTimeout(() => {
+      const score = Math.floor(Math.random() * 30) + 70 // 70-100 score
+      const feedback = score >= 90 ? 'Excellent form! Keep up the great work.' : 
+                      score >= 80 ? 'Good form with minor improvements needed.' :
+                      'Form needs improvement. Focus on the highlighted areas.'
+      
+      const issues = score < 85 ? [
+        'Keep your back straight',
+        'Lower the weight slightly',
+        'Focus on controlled movement'
+      ].slice(0, Math.floor(Math.random() * 3) + 1) : []
+
+      setAnalysisResult({ score, feedback, issues })
       setIsUploading(false)
-      alert('Analysis complete!')
+      setShowResult(true)
     }, 2000)
+  }
+
+  const closeResult = () => {
+    setShowResult(false)
+    setSelectedFile(null)
   }
 
   return (
@@ -104,6 +133,57 @@ export default function MVPCoachApp() {
           </Button>
         </div>
       </main>
+
+      {/* Analysis Result Modal */}
+      {showResult && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900 rounded-xl p-8 max-w-md w-full border border-gray-700">
+            <div className="text-center space-y-6">
+              {/* Score Circle */}
+              <div className="relative w-32 h-32 mx-auto">
+                <div className="w-32 h-32 rounded-full border-4 border-gray-700 flex items-center justify-center">
+                  <div className={`text-4xl font-bold ${
+                    analysisResult.score >= 90 ? 'text-green-500' :
+                    analysisResult.score >= 80 ? 'text-yellow-500' :
+                    'text-red-500'
+                  }`}>
+                    {analysisResult.score}%
+                  </div>
+                </div>
+              </div>
+
+              {/* Feedback */}
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Analysis Complete</h3>
+                <p className="text-gray-300">{analysisResult.feedback}</p>
+              </div>
+
+              {/* Issues */}
+              {analysisResult.issues.length > 0 && (
+                <div className="text-left">
+                  <h4 className="text-sm font-semibold text-red-400 mb-2">Areas to improve:</h4>
+                  <ul className="space-y-1">
+                    {analysisResult.issues.map((issue, index) => (
+                      <li key={index} className="text-sm text-gray-400 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
+                        {issue}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Close Button */}
+              <Button
+                onClick={closeResult}
+                className="bg-red-600 hover:bg-red-700 text-white w-full"
+              >
+                Analyze Another Video
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
