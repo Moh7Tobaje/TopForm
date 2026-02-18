@@ -6,7 +6,6 @@ import "./globals.css"
 import FloatingChatButton from "@/components/floating-chat-button"
 import Providers from "@/components/providers"
 import LayoutWrapper from "@/components/LayoutWrapper"
-import RTLDebugger from "@/components/RTLDebugger"
 import { Toaster } from "@/components/ui/toaster"
 
 // Load fonts
@@ -104,7 +103,6 @@ html[dir="rtl"] {
             <LayoutWrapper>
               {children}
             </LayoutWrapper>
-            <RTLDebugger />
             <FloatingChatButton />
             <Toaster />
           </Providers>
