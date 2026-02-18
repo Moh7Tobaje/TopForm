@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
+import fs from 'fs'
 
 const TWELVELABS_BASE = process.env.TWELVELABS_API_URL || 'https://api.twelvelabs.io/v1.3'
 const INDEX_NAME = process.env.TWELVELABS_INDEX_NAME || 'topcoach-analysis'
@@ -102,7 +105,14 @@ async function createAsset(apiKey: string, videoUrl: string): Promise<string> {
 }
 
 async function analyzeVideo(apiKey: string, videoId: string): Promise<string> {
-  const prompt = `You are an expert fitness coach. Analyze this video of an exercise performance in detail.
+  // Read the new system prompt from file
+  let prompt: string
+  try {
+    const promptPath = join(process.cwd(), 'prompt.txt')
+    prompt = await readFile(promptPath, 'utf8')
+  } catch (error) {
+    // Fallback prompt if file doesn't exist
+    prompt = `You are an expert fitness coach. Analyze this video of an exercise performance in detail.
 
 Provide:
 1) Form and technique – what is correct and what needs improvement.
@@ -111,6 +121,7 @@ Provide:
 4) Tips to optimize the movement.
 
 Be concise and actionable. If the video or context suggests the user prefers Arabic, respond in Arabic; otherwise use English.`
+  }
 
   const analyzeRes = await twelvelabsFetch('/analyze', apiKey, {
     method: 'POST',
