@@ -26,35 +26,17 @@ CREATE TABLE IF NOT EXISTS conversations (
     date TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create nutrition_tracking table
-CREATE TABLE IF NOT EXISTS nutrition_tracking (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
-    protein_consumed DECIMAL(10,2) DEFAULT 0,
-    protein_required DECIMAL(10,2) DEFAULT 0,
-    carbs_consumed DECIMAL(10,2) DEFAULT 0,
-    carbs_required DECIMAL(10,2) DEFAULT 0,
-    fat_consumed DECIMAL(10,2) DEFAULT 0,
-    fat_required DECIMAL(10,2) DEFAULT 0,
-    calories_consumed DECIMAL(10,2) DEFAULT 0,
-    calories_required DECIMAL(10,2) DEFAULT 0,
-    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
 CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id);
 CREATE INDEX IF NOT EXISTS idx_conversations_date ON conversations(date);
 CREATE INDEX IF NOT EXISTS idx_users_clerk_user_id ON users(clerk_user_id);
-CREATE INDEX IF NOT EXISTS idx_nutrition_tracking_user_id ON nutrition_tracking(user_id);
-CREATE INDEX IF NOT EXISTS idx_nutrition_tracking_timestamp ON nutrition_tracking(timestamp);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE nutrition_tracking ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies
 -- Users can only access their own data
@@ -97,24 +79,3 @@ CREATE POLICY "Users can insert own conversations" ON conversations
         )
     );
 
--- Nutrition tracking policies
-CREATE POLICY "Users can view own nutrition tracking" ON nutrition_tracking
-    FOR SELECT USING (
-        user_id IN (
-            SELECT user_id FROM users WHERE clerk_user_id = auth.uid()::text
-        )
-    );
-
-CREATE POLICY "Users can insert own nutrition tracking" ON nutrition_tracking
-    FOR INSERT WITH CHECK (
-        user_id IN (
-            SELECT user_id FROM users WHERE clerk_user_id = auth.uid()::text
-        )
-    );
-
-CREATE POLICY "Users can update own nutrition tracking" ON nutrition_tracking
-    FOR UPDATE USING (
-        user_id IN (
-            SELECT user_id FROM users WHERE clerk_user_id = auth.uid()::text
-        )
-    );

@@ -14,7 +14,7 @@ const MainNavigation: React.FC = () => {
   const pathname = usePathname();
   
   // Pages where navigation should be hidden
-  const hideNavigationPages = ['/workout', '/nutrition', '/chat'];
+  const hideNavigationPages = ['/workout', '/chat'];
   const shouldHideNavigation = hideNavigationPages.some(page => pathname.startsWith(page));
 
   // Don't render navigation on specified pages
@@ -39,13 +39,7 @@ const MainNavigation: React.FC = () => {
           <Link href="/workout" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
             {t('nav.workout')}
           </Link>
-          <Link href="/nutrition" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
-            {t('nav.nutrition')}
-          </Link>
-          <Link href="/progress" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
-            {t('nav.progress')}
-          </Link>
-          <Link href="/community" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
+                              <Link href="/community" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
             {t('nav.community')}
           </Link>
         </nav>

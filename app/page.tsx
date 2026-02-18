@@ -14,10 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useProgressData } from '@/hooks/useProgressData'
-import { useMainPageProgress } from '@/hooks/useMainPageProgress'
 import {
   LineChart,
   Line,
@@ -102,13 +99,10 @@ interface LeaderboardUser {
 
 export default function TopCoachApp() {
   const { t, isRTL, language, setLanguage } = useLanguage()
-  const { progressData, loading: progressLoading } = useMainPageProgress()
 
   const [activeTab, setActiveTab] = useState("home")
   const [isVisible, setIsVisible] = useState(false)
-  const [progressVisible, setProgressVisible] = useState(false)
   const [comingSoonVisible, setComingSoonVisible] = useState(false)
-  const [nutritionCaloriesText, setNutritionCaloriesText] = useState<string>("Loading...")
   const [randomQuote, setRandomQuote] = useState<string>("")
   
   // Array of motivational quotes that will rotate
@@ -126,7 +120,6 @@ export default function TopCoachApp() {
     "AI kills the limits you set in your head—now you have no ceiling. 🧨🚀",
     "Your will builds power, AI builds the path. 🛤️💪",
     "AI is the edge. You are the force. Together, unstoppable. ⚡🦾",
-    "Why train blind, when AI can laser-focus your progress? 🎯👁️",
     "The future of bodybuilding isn't bigger biceps—it's smarter training. 💡💪",
     "AI gives clarity, you give chaos to the weights. 🌪️🏋️",
     "Train like a warrior, recover like a scientist—AI makes it possible. ⚔️🔬",
@@ -182,8 +175,7 @@ export default function TopCoachApp() {
     {
       id: "4",
       user: { name: "Alex Kim", avatar: "/fitness-enthusiast.png", level: 8 },
-      content:
-        "Remember: Progress isn't always linear. Some days are harder than others, but showing up is what matters most. Keep pushing!",
+      content: "Keep pushing your limits every day!",
       timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000),
       likes: 42,
       comments: 15,
@@ -223,7 +215,7 @@ export default function TopCoachApp() {
       replies: 34,
       views: 289,
       lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      category: "Nutrition",
+      category: "Nutrition"
     },
     {
       id: "4",
@@ -282,7 +274,7 @@ export default function TopCoachApp() {
       avatar: "/user-avatar.png",
       points: 1950,
       rank: 5,
-      streak: progressData?.currentStreak || 15,
+      streak: 0,
       workouts: 32,
     },
   ])
@@ -304,51 +296,7 @@ export default function TopCoachApp() {
   }, [])
 
 
-  // Generate dynamic progress summary
-  const generateProgressSummary = () => {
-    if (progressLoading || !progressData) return "Loading today's progress..."
 
-    const { todayWorkouts, todayExercises, todayCalories, todayProtein } = progressData
-
-    if (todayWorkouts === 0 && todayExercises === 0) {
-      return "No workouts completed today. Let's get started!"
-    }
-
-    if (todayWorkouts > 0 && todayExercises > 0) {
-      return `Completed ${todayExercises} exercises in ${todayWorkouts} workout${todayWorkouts > 1 ? 's' : ''} today!`
-    }
-
-    return "Keep pushing your limits today!"
-  }
-  useEffect(() => {
-    const fetchNutritionMetrics = async () => {
-      try {
-        const res = await fetch('/api/nutrition/metrics')
-        if (res.ok) {
-          const m = await res.json()
-          const required = typeof m.requiredCalories === 'number' ? m.requiredCalories : 'N/A'
-          const consumed = typeof m.calories === 'number' ? m.calories : 'N/A'
-          setNutritionCaloriesText(`${required} / ${consumed}`)
-        } else {
-          setNutritionCaloriesText('Unknown')
-        }
-      } catch (e) {
-        console.error('Error fetching nutrition metrics:', e)
-        setNutritionCaloriesText('Unknown')
-      }
-    }
-    
-    fetchNutritionMetrics()
-  }, [])
-
-  useEffect(() => {
-    if (activeTab === "progress") {
-      const timer = setTimeout(() => setProgressVisible(true), 300)
-      return () => clearTimeout(timer)
-    } else {
-      setProgressVisible(false)
-    }
-  }, [activeTab])
 
   const toggleLike = (postId: string) => {
     setCommunityPosts((posts) =>
@@ -369,21 +317,6 @@ export default function TopCoachApp() {
     { day: "Tue", workouts: 1, calories: 320, duration: 30 },
     { day: "Wed", workouts: 3, calories: 680, duration: 65 },
     { day: "Thu", workouts: 2, calories: 520, duration: 50 },
-    { day: "Fri", workouts: 1, calories: 380, duration: 35 },
-    { day: "Sat", workouts: 2, calories: 590, duration: 55 },
-    { day: "Sun", workouts: 1, calories: 290, duration: 25 },
-  ]
-
-  const monthlyProgressData = [
-    { month: "Jan", weight: 180, bodyFat: 18, muscle: 145 },
-    { month: "Feb", weight: 178, bodyFat: 17.2, muscle: 147 },
-    { month: "Mar", weight: 176, bodyFat: 16.5, muscle: 149 },
-    { month: "Apr", weight: 174, bodyFat: 15.8, muscle: 151 },
-    { month: "May", weight: 172, bodyFat: 15.1, muscle: 153 },
-    { month: "Jun", weight: 170, bodyFat: 14.5, muscle: 155 },
-  ]
-
-  const workoutTypeData = [
     { name: "Strength", value: 45, color: "hsl(var(--chart-1))" },
     { name: "Cardio", value: 30, color: "hsl(var(--chart-2))" },
     { name: "Flexibility", value: 15, color: "hsl(var(--chart-3))" },
@@ -421,7 +354,6 @@ export default function TopCoachApp() {
       description: "Increased max weight by 20%",
       icon: Dumbbell,
       earned: false,
-      progress: 75,
     },
     {
       id: 5,
@@ -429,7 +361,6 @@ export default function TopCoachApp() {
       description: "Complete 100 cardio sessions",
       icon: Activity,
       earned: false,
-      progress: 45,
     },
     {
       id: 6,
@@ -437,7 +368,6 @@ export default function TopCoachApp() {
       description: "30 days without missing a workout",
       icon: Award,
       earned: false,
-      progress: 20,
     },
   ]
 
@@ -467,7 +397,6 @@ export default function TopCoachApp() {
     setTimeout(() => {
       const aiResponses = [
         t('ai.generateResponse'),
-        t('ai.progressResponse'),
         t('ai.strengthResponse'),
         t('ai.motivationResponse'),
       ]
@@ -507,9 +436,6 @@ export default function TopCoachApp() {
       switch (action) {
         case "Meal Suggestions":
           response = t('ai.mealResponse')
-          break
-        case "Track Progress":
-          response = t('ai.trackResponse')
           break
         default:
           response = t('ai.defaultResponse')
@@ -613,10 +539,6 @@ export default function TopCoachApp() {
                 <Link href="/workout">{t('nav.workout')}</Link>
               </Button>
               <Button variant="ghost" asChild>
-                <Link href="/nutrition">{t('nav.nutrition')}</Link>
-              </Button>
-              <Button variant="ghost" asChild>
-                <Link href="/progress">{t('nav.progress')}</Link>
               </Button>
               <Button variant="ghost" onClick={triggerComingSoon}>
                 {t('nav.community')}
@@ -740,35 +662,24 @@ export default function TopCoachApp() {
                           <Button size="lg" variant="outline" onClick={() => handleQuickAction("Meal Suggestions")} className="text-sm md:text-base px-6 py-3 border-primary/30 transition-all duration-200">
                             {t('actions.mealSuggestions')}
                           </Button>
-                          <Button size="lg" variant="outline" onClick={() => handleQuickAction("Track Progress")} className="text-sm md:text-base px-6 py-3 border-primary/30 transition-all duration-200">
-                            {t('actions.trackProgress')}
-                          </Button>
                         </div>
                       </div>
                       <div className="space-y-6">
                         <div className="bg-gradient-to-br from-card to-card/50 p-6 md:p-8 rounded-2xl border border-border shadow-xl backdrop-blur-sm">
                           <div className="flex items-center justify-between mb-4">
-                            <span className="font-bold text-lg md:text-xl text-white">{t('hero.todaysProgress')}</span>
-                            <span className="text-primary text-xl md:text-2xl font-bold">
-                              {progressLoading ? 'Loading...' : (progressData?.todayScore || 0)}%
-                            </span>
+                            <span className="font-bold text-lg md:text-xl text-white">Today's Summary</span>
                           </div>
-                          <Progress value={progressLoading ? 0 : (progressData?.todayScore || 0)} className="mb-4 h-3" />
-                          <p className="text-sm md:text-base text-muted-foreground mt-4 italic font-light">"{generateProgressSummary()}"</p>
                         </div>
                         <div className="grid grid-cols-2 gap-4 md:gap-6">
                           <div className="bg-gradient-to-br from-primary/10 to-card/50 p-4 md:p-6 rounded-2xl border border-primary/20 text-center transition-all duration-300">
                             <Target className="w-6 h-6 md:w-8 md:h-8 text-primary mx-auto mb-3" />
                             <p className="text-sm md:text-base font-bold text-white mb-1">{t('hero.calories')}</p>
-                            <p className="text-lg md:text-2xl font-black text-white mb-2">{nutritionCaloriesText}</p>
+                            <p className="text-lg md:text-2xl font-black text-white mb-2">Coming Soon</p>
                             <p className="text-xs md:text-sm text-muted-foreground">{t('hero.requiredConsumed')}</p>
                           </div>
                           <div className="bg-gradient-to-br from-secondary to-card/50 p-4 md:p-6 rounded-2xl border border-border/50 text-center transition-all duration-300">
                             <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-primary mx-auto mb-3" />
                             <p className="text-sm md:text-base font-bold text-white mb-1">{t('hero.streak')}</p>
-                            <p className="text-lg md:text-2xl font-black text-white mb-2">
-                              {progressLoading ? 'Loading...' : (progressData?.currentStreak || 0)}
-                            </p>
                             <p className="text-xs md:text-sm text-muted-foreground">days</p>
                           </div>
                         </div>
@@ -850,16 +761,6 @@ export default function TopCoachApp() {
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
-              <Link href="/nutrition">
-                <Apple className="w-5 h-5 transition-all duration-200" />
-                <span className="text-xs font-semibold transition-colors duration-200">{t('nav.nutrition')}</span>
-              </Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
-              <Link href="/progress">
-                <BarChart3 className="w-5 h-5 transition-all duration-200" />
-                <span className="text-xs font-semibold transition-colors duration-200">{t('nav.progress')}</span>
-              </Link>
             </Button>
             <Button variant="ghost" size="sm" onClick={triggerComingSoon} className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
               <Users className="w-5 h-5 transition-all duration-200" />
@@ -957,7 +858,9 @@ export default function TopCoachApp() {
                   <span>Completion</span>
                   <span className="text-primary font-bold">50%</span>
                 </div>
-                <Progress value={50} />
+                <div className="w-full bg-secondary rounded-full h-2">
+                  <div className="bg-primary h-2 rounded-full" style={{ width: '50%' }}></div>
+                </div>
                 <div className="grid grid-cols-3 gap-4 mt-6">
                   <div className="text-center">
                     <p className="text-2xl font-bold text-primary">2</p>
@@ -980,148 +883,6 @@ export default function TopCoachApp() {
     )
   }
 
-  // Nutrition Tab
-  if (activeTab === "nutrition") {
-    return (
-      <div className="min-h-screen p-4 pt-20">
-        <div className="container mx-auto max-w-4xl">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold font-[var(--font-heading)]">Nutrition Plan</h1>
-              <p className="text-muted-foreground">Balanced Meals for Optimal Performance</p>
-            </div>
-            <Button onClick={() => setActiveTab("home")} variant="outline">
-              Back to Home
-            </Button>
-          </div>
-
-          <div className="grid gap-6">
-            {mealPlan.map((meal, index) => (
-              <Card
-                key={index}
-                className="gradient-black-gray border-border transition-all duration-300 hover:glow-silver"
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary">
-                        <span className="text-primary-foreground font-bold">{meal.meal[0]}</span>
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold">{meal.name}</h3>
-                        <p className="text-muted-foreground">
-                          {meal.calories} calories • {meal.protein}g protein • {meal.carbs}g carbs • {meal.fats}g fats
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        Swap
-                      </Button>
-                      <Button className="gradient-red-silver">View Recipe</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Progress Tab
-  if (activeTab === "progress") {
-    return (
-      <div className="min-h-screen circuit-pattern-dense bg-background p-4 pt-20">
-        <div className="container mx-auto max-w-4xl">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold font-[var(--font-heading)]">Your Progress</h1>
-              <p className="text-muted-foreground">Track Your Journey and Achievements</p>
-            </div>
-            <Button onClick={() => setActiveTab("home")} variant="outline">
-              Back to Home
-            </Button>
-          </div>
-
-          {progressVisible && (
-            <div className="grid gap-6">
-              <Card className="gradient-black-gray border-border">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Weekly Workout Summary</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={weeklyWorkoutData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="day" />
-                      <YAxis />
-                      <Bar dataKey="workouts" fill="hsl(var(--chart-1))" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card className="gradient-black-gray border-border">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Monthly Progress Overview</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={monthlyProgressData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Line type="monotone" dataKey="weight" stroke="hsl(var(--chart-2))" />
-                      <Line type="monotone" dataKey="bodyFat" stroke="hsl(var(--chart-3))" />
-                      <Line type="monotone" dataKey="muscle" stroke="hsl(var(--chart-4))" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card className="gradient-black-gray border-border">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Workout Type Distribution</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={workoutTypeData}
-                        cx={200}
-                        cy={200}
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                      >
-                        {workoutTypeData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card className="gradient-black-gray border-border">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Achievements</h3>
-                  <div className="grid gap-4">
-                    {achievements.map((achievement) => (
-                      <div key={achievement.id} className="flex items-center space-x-4">
-                        <achievement.icon className="w-6 h-6 text-primary" />
-                        <div>
-                          <p className="font-semibold">{achievement.title}</p>
-                          <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  }
 
   // Community Tab
   if (activeTab === "community") {
