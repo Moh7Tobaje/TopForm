@@ -26,7 +26,7 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell,
+  Cell
 } from "recharts"
 import {
   Play,
@@ -45,6 +45,7 @@ import {
   Flame,
   Activity,
   Pin,
+  Video
 } from "lucide-react"
 
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -656,6 +657,11 @@ export default function TopCoachApp() {
                           <Button size="lg" variant="outline" onClick={() => handleQuickAction("Meal Suggestions")} className="text-sm md:text-base px-6 py-3 border-primary/30 transition-all duration-200">
                             {t('actions.mealSuggestions')}
                           </Button>
+                          <Button size="lg" variant="outline" asChild className="text-sm md:text-base px-6 py-3 border-primary/30 transition-all duration-200">
+                            <Link href="/analyze-performance">
+                              Analyze Performance
+                            </Link>
+                          </Button>
                         </div>
                       </div>
                       <div className="space-y-6">
@@ -749,6 +755,10 @@ export default function TopCoachApp() {
               <span className="text-xs font-semibold group-hover:text-[#cc2e2f] transition-colors duration-200">{t('nav.home')}</span>
             </Button>
             <Button variant="ghost" size="sm" asChild className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
+              <Link href="/analyze-performance">
+                <Video className="w-5 h-5 transition-all duration-200" />
+                <span className="text-xs font-semibold transition-colors duration-200">Analyze Performance</span>
+              </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
             </Button>
