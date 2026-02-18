@@ -35,10 +35,10 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.logOut': 'Log out',
     
     // Hero Section
-    'hero.badge': 'AI Personal Trainer & Smart Fitness Coach',
+    'hero.badge': 'AI-Powered Form Analysis',
     'hero.title': '',
-    'hero.subtitle': 'AI Eyes for Bodybuilders',
-    'hero.description': 'Upload your workout video. Get instant AI-powered form analysis with actionable tips to perfect your technique. Built for serious bodybuilders.',
+    'hero.subtitle': 'Perfect Your Form with AI',
+    'hero.description': 'Upload a workout video. Get instant form analysis with specific tips to fix your technique.',
     'hero.cta': 'Analyze Your First Video Free',
     'hero.aiCoach': 'FormAI Coach',
     'hero.onlineNow': 'Ready to analyze your form',
@@ -133,10 +133,10 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.logOut': 'تسجيل الخروج',
     
     // Hero Section
-    'hero.badge': 'مدرب شخصي بالذكاء الاصطناعي ومستشار لياقة ذكي',
+    'hero.badge': 'تحليل الأداء بالذكاء الاصطناعي',
     'hero.title': '',
-    'hero.subtitle': 'عيون ذكاء اصطناعي للاعبين كمال الأجسام',
-    'hero.description': 'ارفع فيديو تمرينك. احصل على تحليل فوري للأداء بالذكاء الاصطناعي مع نصائح عملية لتحسين تقنيتك. مصمم للاعبين كمال الأجسام الجادين.',
+    'hero.subtitle': 'أكمل أداءك بالذكاء الاصطناعي',
+    'hero.description': 'ارفع فيديو تمرين. احصل على تحليل فوري للأداء مع نصائح محددة لإصلاح تقنيتك.',
     'hero.cta': 'حلل أول فيديو لك مجاناً',
     'hero.aiCoach': 'مدرب FormAI',
     'hero.onlineNow': 'جاهز لتحليل أدائك',
