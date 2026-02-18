@@ -14,7 +14,7 @@ const MainNavigation: React.FC = () => {
   const pathname = usePathname();
   
   // Pages where navigation should be hidden
-  const hideNavigationPages = ['/workout', '/chat'];
+  const hideNavigationPages = ['/workout'];
   const shouldHideNavigation = hideNavigationPages.some(page => pathname.startsWith(page));
 
   // Don't render navigation on specified pages

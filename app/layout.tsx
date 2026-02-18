@@ -3,7 +3,6 @@ import type { Metadata } from "next"
 import { Space_Grotesk, DM_Sans, Cairo, Tajawal } from "next/font/google"
 import { Suspense } from "react"
 import "./globals.css"
-import FloatingChatButton from "@/components/floating-chat-button"
 import Providers from "@/components/providers"
 import LayoutWrapper from "@/components/LayoutWrapper"
 import { Toaster } from "@/components/ui/toaster"
@@ -103,7 +102,6 @@ html[dir="rtl"] {
             <LayoutWrapper>
               {children}
             </LayoutWrapper>
-            <FloatingChatButton />
             <Toaster />
           </Providers>
         </Suspense>
