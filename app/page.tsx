@@ -1,587 +1,354 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { SignedIn, SignedOut, SignOutButton } from "@clerk/nextjs"
-import { Globe, ChevronDown } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts"
-import {
-  Play,
-  Zap,
-  Target,
-  TrendingUp,
-  MessageCircle,
+  Bell,
+  Search,
+  Plus,
+  Home,
+  Clock,
   Dumbbell,
-  Apple,
+  User,
+  Video,
+  TrendingUp,
+  Target,
+  Shield,
+  ChevronRight,
+  Filter,
+  Upload,
+  Play,
   BarChart3,
-  Star,
-  Bot,
-  Trophy,
-  Award,
-  Flame,
   Activity,
-  Pin,
-  Video
+  LucideIcon
 } from "lucide-react"
-
 import { useLanguage } from '@/contexts/LanguageContext'
 
-interface ChatMessage {
+// Import dashboard components
+import { StatsCard } from "@/components/dashboard/StatsCard"
+import { ExerciseCard } from "@/components/dashboard/ExerciseCard"
+import { AnalysisCard } from "@/components/dashboard/AnalysisCard"
+import { FloatingActionButton } from "@/components/dashboard/FloatingActionButton"
+import { BottomNavigation } from "@/components/dashboard/BottomNavigation"
+import { EmptyState } from "@/components/dashboard/EmptyState"
+import { SkeletonStats, SkeletonExercises, SkeletonAnalyses } from "@/components/dashboard/SkeletonComponents"
+
+// Import custom styles
+import "@/styles/dashboard.css"
+
+interface Analysis {
   id: string
-  content: string
-  sender: "user" | "ai"
-  timestamp: Date
-  type?: "text" | "action"
+  exercise: string
+  date: string
+  score: number
+  summary: string
+  icon: LucideIcon
+  color: string
 }
 
-
-interface LeaderboardUser {
+interface Exercise {
   id: string
   name: string
-  avatar: string
-  points: number
-  rank: number
-  streak: number
-  workouts: number
-  badge?: string
+  icon: LucideIcon
+  color: string
 }
 
 export default function TopCoachApp() {
   const { t, isRTL, language, setLanguage } = useLanguage()
-
+  const [isLoading, setIsLoading] = useState(true)
+  const [userName, setUserName] = useState("Athlete")
   const [activeTab, setActiveTab] = useState("home")
-  const [isVisible, setIsVisible] = useState(false)
-  const [comingSoonVisible, setComingSoonVisible] = useState(false)
-  const triggerComingSoon = () => {
-    setComingSoonVisible(true)
-  }
-  
-  
-  const [leaderboard] = useState<LeaderboardUser[]>([
+  const [stats, setStats] = useState({
+    videosAnalyzed: 0,
+    averageScore: 0,
+    issuesFixed: 0
+  })
+
+  const exercises: Exercise[] = [
+    { id: "squat", name: "Squat", icon: Target, color: "#E53935" },
+    { id: "deadlift", name: "Deadlift", icon: TrendingUp, color: "#4CAF50" },
+    { id: "bench", name: "Bench Press", icon: Activity, color: "#2196F3" },
+    { id: "ohp", name: "OHP", icon: Shield, color: "#FFC107" },
+    { id: "rows", name: "Rows", icon: BarChart3, color: "#9C27B0" }
+  ]
+
+  const [recentAnalyses, setRecentAnalyses] = useState<Analysis[]>([
     {
       id: "1",
-      name: "Emma Thompson",
-      avatar: "/woman-runner.png",
-      points: 2840,
-      rank: 1,
-      streak: 28,
-      workouts: 45,
-      badge: "Marathon Ready",
+      exercise: "Squat",
+      date: "Today",
+      score: 78,
+      summary: "Good depth, slight forward lean",
+      icon: Target,
+      color: "#E53935"
     },
     {
       id: "2",
-      name: "Sarah Chen",
-      avatar: "/fit-woman-outdoors.png",
-      points: 2650,
-      rank: 2,
-      streak: 30,
-      workouts: 42,
-      badge: "Consistency King",
+      exercise: "Deadlift",
+      date: "Yesterday",
+      score: 85,
+      summary: "Great form, maintain back position",
+      icon: TrendingUp,
+      color: "#4CAF50"
     },
     {
       id: "3",
-      name: "Mike Rodriguez",
-      avatar: "/professional-man.png",
-      points: 2420,
-      rank: 3,
-      streak: 15,
-      workouts: 38,
-    },
-    {
-      id: "4",
-      name: "Alex Kim",
-      avatar: "/fitness-enthusiast.png",
-      points: 2180,
-      rank: 4,
-      streak: 12,
-      workouts: 35,
-    },
-    {
-      id: "5",
-      name: "You",
-      avatar: "/user-avatar.png",
-      points: 1950,
-      rank: 5,
-      streak: 0,
-      workouts: 32,
-    },
+      exercise: "Bench Press",
+      date: "2 days ago",
+      score: 92,
+      summary: "Excellent control and depth",
+      icon: Activity,
+      color: "#2196F3"
+    }
   ])
-
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: "1",
-      content: t('ai.welcome'),
-      sender: "ai",
-      timestamp: new Date(),
-    },
-  ])
-  const [newMessage, setNewMessage] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setIsVisible(true)
+    // Simulate loading data
+    setTimeout(() => {
+      setStats({
+        videosAnalyzed: 12,
+        averageScore: 78,
+        issuesFixed: 8
+      })
+      setIsLoading(false)
+    }, 1500)
   }, [])
 
-
-
-
-  
-  const weeklyWorkoutData = [
-    { day: "Mon", workouts: 2, calories: 450, duration: 45 },
-    { day: "Tue", workouts: 1, calories: 320, duration: 30 },
-    { day: "Wed", workouts: 3, calories: 680, duration: 65 },
-    { day: "Thu", workouts: 2, calories: 520, duration: 50 },
-    { name: "Strength", value: 45, color: "hsl(var(--chart-1))" },
-    { name: "Cardio", value: 30, color: "hsl(var(--chart-2))" },
-    { name: "Flexibility", value: 15, color: "hsl(var(--chart-3))" },
-    { name: "Sports", value: 10, color: "hsl(var(--chart-4))" },
-  ]
-
-  const achievements = [
-    {
-      id: 1,
-      title: "First Week Complete",
-      description: "Completed your first week of training",
-      icon: Trophy,
-      earned: true,
-      date: "2024-01-15",
-    },
-    {
-      id: 2,
-      title: "Consistency King",
-      description: "7 days workout streak",
-      icon: Flame,
-      earned: true,
-      date: "2024-01-22",
-    },
-    {
-      id: 3,
-      title: "Calorie Crusher",
-      description: "Burned 5000+ calories this month",
-      icon: Target,
-      earned: true,
-      date: "2024-02-01",
-    },
-    {
-      id: 4,
-      title: "Strength Builder",
-      description: "Increased max weight by 20%",
-      icon: Dumbbell,
-      earned: false,
-    },
-    {
-      id: 5,
-      title: "Marathon Ready",
-      description: "Complete 100 cardio sessions",
-      icon: Activity,
-      earned: false,
-    },
-    {
-      id: 6,
-      title: "Perfect Month",
-      description: "30 days without missing a workout",
-      icon: Award,
-      earned: false,
-    },
-  ]
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  const handleAnalyzeVideo = () => {
+    // Navigate to video analysis page
+    console.log("Navigate to video analysis")
   }
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [chatMessages])
-
-  const sendMessage = async () => {
-    if (!newMessage.trim()) return
-
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: newMessage,
-      sender: "user",
-      timestamp: new Date(),
-    }
-
-    setChatMessages((prev) => [...prev, userMessage])
-    setNewMessage("")
-    setIsTyping(true)
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponses = [
-        t('ai.generateResponse'),
-        t('ai.strengthResponse'),
-        t('ai.motivationResponse'),
-      ]
-
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: aiResponses[Math.floor(Math.random() * aiResponses.length)],
-        sender: "ai",
-        timestamp: new Date(),
-      }
-
-      setChatMessages((prev) => [...prev, aiMessage])
-      setIsTyping(false)
-    }, 1500)
+  const handleExerciseClick = (exerciseId: string) => {
+    // Navigate to exercise-specific analysis
+    console.log(`Analyze ${exerciseId}`)
   }
 
-  const handleQuickAction = (action: string) => {
-
-    const actionMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: action,
-      sender: "user",
-      timestamp: new Date(),
-      type: "action",
-    }
-
-    setChatMessages((prev) => [...prev, actionMessage])
-    setIsTyping(true)
-
-    setTimeout(() => {
-      let response = ""
-      switch (action) {
-        default:
-          response = t('ai.defaultResponse')
-      }
-
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: response,
-        sender: "ai",
-        timestamp: new Date(),
-      }
-
-      setChatMessages((prev) => [...prev, aiMessage])
-      setIsTyping(false)
-    }, 1200)
+  const handleAnalysisClick = (analysisId: string) => {
+    // Navigate to analysis details
+    console.log(`View analysis ${analysisId}`)
   }
 
-  const testimonials = [
-    {
-      name: t('testimonials.sarah.name'),
-      role: t('testimonials.sarah.role'),
-      content: t('testimonials.sarah.content'),
-      rating: 5,
-      avatar: "/fit-woman-outdoors.png",
-    },
-    {
-      name: t('testimonials.mike.name'),
-      role: t('testimonials.mike.role'),
-      content: t('testimonials.mike.content'),
-      rating: 5,
-      avatar: "/professional-man.png",
-    },
-    {
-      name: t('testimonials.emma.name'),
-      role: t('testimonials.emma.role'),
-      content: t('testimonials.emma.content'),
-      rating: 5,
-      avatar: "/woman-runner.png",
-    },
-  ]
-
-  const workoutPlan = [
-    { exercise: "Push-ups", sets: 3, reps: 12, rest: 60, completed: true },
-    { exercise: "Squats", sets: 4, reps: 15, rest: 90, completed: true },
-    { exercise: "Plank", sets: 3, reps: "45s", rest: 60, completed: false },
-    { exercise: "Burpees", sets: 3, reps: 8, rest: 120, completed: false },
-  ]
-
-  const mealPlan = [
-    {
-      meal: "Breakfast",
-      name: "Protein Power Bowl",
-      calories: 420,
-      protein: 32,
-      carbs: 28,
-      fats: 18,
-      image: "/healthy-breakfast-bowl.png",
-    },
-    {
-      meal: "Lunch",
-      name: "Grilled Chicken Salad",
-      calories: 380,
-      protein: 35,
-      carbs: 15,
-      fats: 22,
-      image: "/grilled-chicken-salad.png",
-    },
-    {
-      meal: "Dinner",
-      name: "Salmon & Quinoa",
-      calories: 520,
-      protein: 38,
-      carbs: 45,
-      fats: 24,
-      image: "/salmon-quinoa-dinner.png",
-    },
-  ]
-
-  if (activeTab === "home") {
+  if (isLoading) {
     return (
-      <div className="min-h-screen circuit-pattern-dense bg-background">
-        {/* Navigation */}
-        <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-md border-b border-border">
+      <div className="min-h-screen bg-[#0D0D0D]">
+        {/* Loading Header */}
+        <header className="fixed top-0 w-full z-50 bg-[#0D0D0D]/95 backdrop-blur-md border-b border-[#1A1A1A]">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <span className="text-lg md:text-xl font-bold font-[var(--font-heading)] bg-gradient-to-r from-[#cc2e2f] to-white bg-clip-text text-transparent">Top Coach</span>
+              <div className="w-10 h-10 skeleton rounded-full"></div>
+              <div className="w-20 h-6 skeleton rounded"></div>
             </div>
-            <div className="hidden md:flex space-x-6">
-              <Button variant="ghost" asChild>
-              </Button>
-              <Button variant="ghost" asChild>
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <Globe className="h-4 w-4" />
-                    <ChevronDown className="h-3 w-3 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-20">
-                  <DropdownMenuItem className="justify-center" onClick={() => setLanguage('en')}>
-                    EN
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="justify-center" onClick={() => setLanguage('ar')}>
-                    AR
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <SignedOut>
-                <Button asChild size="sm" className="gradient-red-silver glow-red">
-                  <Link href="/sign-in">{t('nav.startFree')}</Link>
-                </Button>
-              </SignedOut>
-              <SignedIn>
-                <SignOutButton>
-                  <Button size="sm" className="gradient-red-silver glow-red">{t('nav.logOut')}</Button>
-                </SignOutButton>
-              </SignedIn>
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 skeleton rounded-full"></div>
+              <div className="w-8 h-8 skeleton rounded-full"></div>
+              <div className="w-8 h-8 skeleton rounded-full"></div>
             </div>
           </div>
-        </nav>
+        </header>
 
-        {/* Hero Section */}
-        {activeTab === "home" && (
-          <section className="pt-20 pb-12 px-4 relative overflow-hidden min-h-[90vh] flex items-center">
-          <div className="absolute inset-0 w-full h-full">
-            <iframe
-              src="https://my.spline.design/backlightbgeffect-OMYqWUmL3RYsKEfbabxMzhjU/"
-              frameBorder="0"
-              width="100%"
-              height="100%"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60 backdrop-blur-[1px]"></div>
-          
-          {/* Animated floating particles */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-20 left-10 w-2 h-2 bg-primary/30 rounded-full particle-float"></div>
-            <div className="absolute top-40 right-20 w-3 h-3 bg-primary/20 rounded-full particle-float" style={{animationDelay: '1s'}}></div>
-            <div className="absolute bottom-32 left-1/4 w-2 h-2 bg-white/10 rounded-full particle-float" style={{animationDelay: '2s'}}></div>
-            <div className="absolute top-1/3 right-1/3 w-4 h-4 bg-primary/15 rounded-full particle-float" style={{animationDelay: '0.5s'}}></div>
-            <div className="absolute bottom-20 right-10 w-2 h-2 bg-white/20 rounded-full particle-float" style={{animationDelay: '1.5s'}}></div>
-          </div>
-
-          <div className="container mx-auto text-center relative z-10">
-            <div
-              className={`transition-all duration-800 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-            >
-              <Badge className="mb-6 md:mb-8 gradient-red-silver text-white border-0 text-sm font-medium px-4 py-2 glow-red animate-pulse">
-                <Zap className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                {t('hero.badge')}
-              </Badge>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold font-[var(--font-heading)] mb-6 md:mb-8 bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-2xl leading-tight tracking-tight">
-                <span className="block text-primary drop-shadow-lg">{t('hero.subtitle')}</span>
-              </h1>
-              <SignedOut>
-                {activeTab === "home" && (
-                  <p className="text-lg sm:text-xl md:text-2xl text-gray-200 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed drop-shadow-lg px-4 font-light">
-                    {t('hero.description')}
-                  </p>
-                )}
-              </SignedOut>
-              <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center mb-12 md:mb-16 px-4">
-                <SignedOut>
-                  {activeTab === "home" && (
-                    <Button asChild size="lg" className={`gradient-red-silver glow-red px-8 md:px-12 py-6 md:py-8 w-full sm:w-auto text-lg md:text-xl font-semibold transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-red-500/25 ${isRTL ? 'text-lg md:text-xl' : 'text-lg md:text-xl'}`}>
-                      <Link href="/sign-in">
-                        <Play className="w-5 h-5 md:w-6 md:h-6 mr-3" />
-                        {t('hero.cta')}
-                      </Link>
-                    </Button>
-                  )}
-                </SignedOut>
-              </div>
+        {/* Loading Content */}
+        <main className="pt-16 pb-20">
+          <section className="bg-gradient-to-br from-[#B71C1C] to-[#0D0D0D] py-12 px-4">
+            <div className="container mx-auto">
+              <div className="h-20 skeleton rounded-xl mb-4"></div>
+              <div className="h-12 skeleton rounded-lg w-64"></div>
             </div>
+          </section>
 
-            {/* Demo Preview */}
-            {activeTab === "home" && (
-              <div
-                className={`transition-all duration-800 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-              >
-                <SignedIn>
-                  <Card className="max-w-5xl mx-auto gradient-black-gray border-border glow-silver backdrop-blur-md bg-black/70 transition-all duration-300 shadow-2xl">
-                    <CardContent className="p-6 md:p-10">
-                      <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-                        <div className="space-y-6">
-                          <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-primary/10 to-transparent rounded-xl border border-primary/20">
-                            <Avatar className="border-3 border-primary w-14 h-14 md:w-16 md:h-16 shadow-lg">
-                              <AvatarFallback className="bg-gradient-to-br from-[#cc2e2f] to-[#cc2e2f] text-white font-bold text-xl">TC</AvatarFallback>
-                            </Avatar>
-                            <div className="text-left">
-                              <p className="font-bold text-lg md:text-xl text-white">{t('hero.aiCoach')}</p>
-                              <p className="text-sm md:text-base text-primary font-medium flex items-center">
-                                <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-                                {t('hero.onlineNow')}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex justify-center items-center mt-8">
-                            <Button size="lg" asChild className="text-3xl md:text-4xl px-16 py-10 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-2xl hover:shadow-red-500/50 transform hover:scale-105 transition-all duration-300 border-2 border-red-500/30 glow-red min-w-[400px] min-h-[100px]">
-                              <Link href="/analyze-performance">
-                                Analyze Performance
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </SignedIn>
-              </div>
-            )}
+          <div className="container mx-auto px-4 py-8 space-y-8">
+            <SkeletonStats />
+            <SkeletonExercises />
+            <SkeletonAnalyses />
           </div>
-        </section>
-        )}
-
-        {/* Testimonials */}
-        <SignedOut>
-          {activeTab === "home" && (
-            <section className="py-16 md:py-24 px-4 relative">
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none"></div>
-              <div className="container mx-auto relative z-10">
-                <div className="text-center mb-12 md:mb-16">
-                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-[var(--font-heading)] mb-6 bg-gradient-to-r from-white to-primary bg-clip-text text-transparent" dangerouslySetInnerHTML={{ __html: t('testimonials.title') }} />
-                  <div className="w-24 h-1 bg-gradient-to-r from-primary to-transparent mx-auto rounded-full"></div>
-                </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
-                  {testimonials.map((testimonial, index) => (
-                    <Card
-                      key={index}
-                      className="gradient-black-gray border-border transition-all duration-300 group cursor-pointer"
-                    >
-                      <CardContent className="p-6 md:p-8">
-                        <div className="flex items-center space-x-1 mb-6">
-                          {[...Array(testimonial.rating)].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 md:w-5 md:h-5 fill-primary text-primary transform group-hover:scale-110 transition-transform duration-300" />
-                          ))}
-                        </div>
-                        <p className="text-muted-foreground mb-6 text-base md:text-lg leading-relaxed font-light italic">"{testimonial.content}"</p>
-                        <div className="flex items-center space-x-4">
-                          <div className="relative">
-                            <Avatar className="w-12 h-12 md:w-14 md:h-14 border-2 border-primary/20 group-hover:border-primary transition-colors duration-300">
-                              <AvatarImage src={testimonial.avatar || "/placeholder.svg"} />
-                              <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold">{testimonial.name[0]}</AvatarFallback>
-                            </Avatar>
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-background animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          </div>
-                          <div>
-                            <p className="font-bold text-base md:text-lg text-white group-hover:text-primary transition-colors duration-300">{testimonial.name}</p>
-                            <p className="text-sm md:text-base text-muted-foreground">{testimonial.role}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-        </SignedOut>
-
-        {/* Bottom Navigation */}
-        <div className="fixed bottom-0 w-full bg-card/95 backdrop-blur-md border-t border-border md:hidden z-40">
-          <div className="flex justify-around py-3 px-2">
-            <Button variant="ghost" size="sm" onClick={() => setActiveTab("home")} className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
-              <div className="relative">
-                <div className="w-6 h-6 bg-gradient-to-br from-[#cc2e2f] to-[#cc2e2f] rounded-full border border-[#cc2e2f]/30 transition-all duration-200"></div>
-                <div className="absolute -bottom-1 -right-1 w-1.5 h-1.5 bg-[#cc2e2f] rounded-full border border-card animate-pulse"></div>
-              </div>
-              <span className="text-xs font-semibold group-hover:text-[#cc2e2f] transition-colors duration-200">{t('nav.home')}</span>
-            </Button>
-            <Button variant="ghost" size="sm" asChild className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
-              <Link href="/analyze-performance">
-                <Video className="w-5 h-5 transition-all duration-200" />
-                <span className="text-xs font-semibold transition-colors duration-200">Analyze Performance</span>
-              </Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
-            </Button>
-          </div>
-        </div>
-
-        {/* Coming Soon Overlay */}
-        {comingSoonVisible && (
-          <div
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-lg flex items-center justify-center p-4"
-            onClick={() => setComingSoonVisible(false)}
-          >
-            <div className="text-center px-8 py-12 rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 shadow-2xl backdrop-blur-md max-w-md w-full transform transition-all duration-300 hover:scale-[1.02]">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-                <Bot className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white bg-gradient-to-r from-white to-primary bg-clip-text text-transparent">{t('comingSoon.title')}</h3>
-              <p className="text-base md:text-lg text-white/80 leading-relaxed">{t('comingSoon.subtitle')}</p>
-              <div className="mt-8">
-                <Button 
-                  onClick={() => setComingSoonVisible(false)}
-                  className="gradient-red-silver glow-red px-8 py-3 font-semibold"
-                >
-                  Got it!
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-
+        </main>
       </div>
     )
   }
 
-  
+  return (
+    <div className="min-h-screen bg-[#0D0D0D] text-white">
+      {/* Header */}
+      <header className="fixed top-0 w-full z-50 bg-[#0D0D0D]/95 backdrop-blur-md border-b border-[#1A1A1A]">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#E53935] to-[#B71C1C] rounded-full flex items-center justify-center">
+              <Video className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold">FormAI</span>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" className="text-[#9E9E9E] hover:text-white">
+              <Search className="w-5 h-5" />
+            </Button>
+            
+            <Button variant="ghost" size="sm" className="relative text-[#9E9E9E] hover:text-white">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-[#E53935] rounded-full pulse-dot"></span>
+            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="p-0">
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback className="bg-[#E53935] text-white font-bold">
+                      {userName[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-[#1A1A1A] border-[#2A2A2A]">
+                <DropdownMenuItem className="text-white hover:bg-[#2A2A2A]">
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-[#2A2A2A]">
+                  Settings
+                </DropdownMenuItem>
+                <SignedIn>
+                  <SignOutButton>
+                    <DropdownMenuItem className="text-white hover:bg-[#2A2A2A]">
+                      Logout
+                    </DropdownMenuItem>
+                  </SignOutButton>
+                </SignedIn>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </header>
 
+      {/* Main Content */}
+      <main className="pt-16 pb-20">
+        {/* Welcome Section */}
+        <section className="welcome-gradient py-12 px-4">
+          <div className="container mx-auto">
+            <div className="flex items-center justify-between">
+              <div className="fade-in-up">
+                <h1 className="text-3xl font-bold text-white mb-2">
+                  Welcome back, {userName}
+                </h1>
+                <p className="text-[#9E9E9E] text-lg">
+                  Ready to perfect your form today?
+                </p>
+              </div>
+              <Button 
+                size="lg" 
+                onClick={handleAnalyzeVideo}
+                className="bg-[#E53935] hover:bg-[#B71C1C] text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 ripple-button fade-in-up stagger-2"
+              >
+                <Upload className="w-5 h-5 mr-2" />
+                Analyze New Video
+              </Button>
+            </div>
+          </div>
+        </section>
 
-  return null
+        <div className="container mx-auto px-4 py-8 space-y-8">
+          {/* Stats Cards */}
+          <div className="fade-in-up stagger-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatsCard 
+                title="Videos Analyzed" 
+                value={stats.videosAnalyzed} 
+                icon={Video} 
+                color="#E53935"
+                delay={0}
+              />
+              <StatsCard 
+                title="Average Score" 
+                value={`${stats.averageScore}%`} 
+                icon={BarChart3} 
+                color="#4CAF50"
+                delay={100}
+              />
+              <StatsCard 
+                title="Issues Fixed" 
+                value={stats.issuesFixed} 
+                icon={Shield} 
+                color="#2196F3"
+                delay={200}
+              />
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <section className="fade-in-up stagger-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Quick Analyze</h2>
+              <Button variant="ghost" className="text-[#E53935] hover:text-[#B71C1C]">
+                View All
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+            
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+              {exercises.map((exercise) => (
+                <ExerciseCard
+                  key={exercise.id}
+                  name={exercise.name}
+                  icon={exercise.icon}
+                  color={exercise.color}
+                  onClick={() => handleExerciseClick(exercise.id)}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* Recent Analyses */}
+          <section className="fade-in-up stagger-5">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Recent Analyses</h2>
+              <Button variant="ghost" className="text-[#9E9E9E] hover:text-white">
+                <Filter className="w-4 h-4 mr-2" />
+                Filter
+              </Button>
+            </div>
+
+            {recentAnalyses.length > 0 ? (
+              <div className="space-y-4">
+                {recentAnalyses.map((analysis) => (
+                  <AnalysisCard
+                    key={analysis.id}
+                    exercise={analysis.exercise}
+                    date={analysis.date}
+                    score={analysis.score}
+                    summary={analysis.summary}
+                    icon={analysis.icon}
+                    color={analysis.color}
+                    onClick={() => handleAnalysisClick(analysis.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState 
+                onButtonClick={handleAnalyzeVideo}
+              />
+            )}
+          </section>
+        </div>
+      </main>
+
+      {/* Floating Action Button */}
+      <FloatingActionButton onClick={handleAnalyzeVideo} />
+
+      {/* Bottom Navigation */}
+      <BottomNavigation 
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+    </div>
+  )
 }
+
