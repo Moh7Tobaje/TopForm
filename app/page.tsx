@@ -104,38 +104,6 @@ export default function TopCoachApp() {
   const [activeTab, setActiveTab] = useState("home")
   const [isVisible, setIsVisible] = useState(false)
   const [comingSoonVisible, setComingSoonVisible] = useState(false)
-  const [randomQuote, setRandomQuote] = useState<string>("")
-  
-  // Array of motivational quotes that will rotate
-  const motivationalQuotes = [
-    "AI won't lift the weights for you, but it will make sure every rep counts. 🏋️‍♂️⚡",
-    "Your discipline builds the body, AI sharpens the strategy. 🔥🧠",
-    "Muscles grow from effort, AI makes sure it's the right effort. 💪🤖",
-    "No excuses—AI gives you the plan, you bring the fire. 📋🔥",
-    "Strength is forged in sweat, precision is powered by AI. 💦⚙️",
-    "With AI, your training isn't random—it's lethal. 🎯⚡",
-    "AI doesn't replace your grind, it multiplies it. 🚀💥",
-    "Stop guessing, start dominating—AI is your secret weapon. 🧩👊",
-    "AI unlocks the science, you unleash the beast. 🔓🐉",
-    "Every champion trains hard, the smart ones train with AI. 🏆🤖",
-    "AI kills the limits you set in your head—now you have no ceiling. 🧨🚀",
-    "Your will builds power, AI builds the path. 🛤️💪",
-    "AI is the edge. You are the force. Together, unstoppable. ⚡🦾",
-    "The future of bodybuilding isn't bigger biceps—it's smarter training. 💡💪",
-    "AI gives clarity, you give chaos to the weights. 🌪️🏋️",
-    "Train like a warrior, recover like a scientist—AI makes it possible. ⚔️🔬",
-    "AI strips away the lies; what's left is pure growth. 🧹📈",
-    "No more wasted sets, no more wasted days—AI is precision strength. ⏳⚡",
-    "Bodybuilding with AI isn't cheating—it's evolution. 🔥🧬"
-  ]
-  
-  // Set random quote once on mount
-  useEffect(() => {
-    if (randomQuote === "") {
-      setRandomQuote(motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)])
-    }
-  }, [randomQuote, motivationalQuotes])
-  
   const triggerComingSoon = () => {
     setComingSoonVisible(true)
   }
@@ -645,13 +613,8 @@ export default function TopCoachApp() {
                             </p>
                           </div>
                         </div>
-                        <div className="bg-gradient-to-br from-card to-card/50 p-6 md:p-8 rounded-2xl border border-border shadow-xl backdrop-blur-sm">
-                          <p className="text-lg md:text-xl font-medium leading-relaxed text-white">
-                            "{randomQuote}"
-                          </p>
-                        </div>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <Button size="lg" variant="outline" asChild className="text-sm md:text-base px-6 py-3 border-primary/30 transition-all duration-200">
+                        <div className="flex justify-center">
+                          <Button size="lg" asChild className="text-lg md:text-xl px-8 py-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-2xl hover:shadow-red-500/50 transform hover:scale-105 transition-all duration-300 border-2 border-red-500/30 glow-red">
                             <Link href="/analyze-performance">
                               Analyze Performance
                             </Link>
