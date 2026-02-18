@@ -12,16 +12,11 @@ import {
   classifyConversationFromMessages 
 } from './standalone-glm-classifier';
 
-import { 
-  analyzeAndSaveWorkoutChanges, 
-  analyzeWorkoutChangesFromMessages 
-} from './standalone-workout-analyzer';
 
 
 export interface AnalysisResult {
   success: boolean;
-  classification: 'workout' | '0';
-  workoutChangesSaved?: boolean;
+  classification: '0';
   messagesAnalyzed: number;
   userId?: string;
   error?: string;
@@ -71,32 +66,18 @@ export async function analyzeLatestConversation(clerkUserId: string): Promise<An
       userMessage.content,
       assistantMessage.content
     );
-    const classification = ['workout', '0'].includes(classificationResult) 
-      ? classificationResult as 'workout' | '0'
-      : '0';
+    const classification = '0';
 
     console.log(`🎯 Classification result: ${classification}`);
 
-    let workoutChangesSaved = false;
-
-    // Step 3: Route to specialized analyzer based on classification
-    if (classification === 'workout') {
-      console.log('🏋️ Routing to workout analyzer...');
-      workoutChangesSaved = await analyzeAndSaveWorkoutChanges(
-        userMessage.content,
-        assistantMessage.content,
-        userId
-      );
-    } else {
-      console.log('📭 Neutral content - no specialized analysis needed');
-    }
+    // Step 3: All content is now neutral
+    console.log('📭 Neutral content - no specialized analysis needed');
 
     const processingTime = Date.now() - startTime;
     
     return {
       success: true,
       classification,
-      workoutChangesSaved,
       messagesAnalyzed: 2,
       userId,
       processingTime
@@ -146,9 +127,7 @@ export async function analyzeRecentConversationHistory(
 
     // Step 2: Classify the conversation
     const classificationResult = await classifyConversationFromMessages(messages);
-    const classification = ['workout', '0'].includes(classificationResult) 
-      ? classificationResult as 'workout' | '0'
-      : '0';
+    const classification = '0';
     console.log(`🎯 Classification result: ${classification}`);
 
     // Get user ID from the first message
@@ -163,22 +142,14 @@ export async function analyzeRecentConversationHistory(
       };
     }
 
-    let workoutChangesSaved = false;
-
-    // Step 3: Route to specialized analyzer
-    if (classification === 'workout') {
-      console.log('🏋️ Routing to workout analyzer with multiple messages...');
-      workoutChangesSaved = await analyzeWorkoutChangesFromMessages(messages, userId);
-    } else {
-      console.log('📭 Neutral content - no specialized analysis needed');
-    }
+    // Step 3: All content is now neutral
+    console.log('📭 Neutral content - no specialized analysis needed');
 
     const processingTime = Date.now() - startTime;
     
     return {
       success: true,
       classification,
-      workoutChangesSaved,
       messagesAnalyzed: messages.length,
       userId,
       processingTime
@@ -225,9 +196,7 @@ export async function quickAnalyzeLastMessage(clerkUserId: string): Promise<Anal
     // Use keyword-based classification for speed
     const { quickKeywordClassification } = await import('./standalone-glm-classifier');
     const classificationResult = quickKeywordClassification(lastMessage.content);
-    const classification = ['workout', '0'].includes(classificationResult) 
-      ? classificationResult as 'workout' | '0'
-      : '0';
+    const classification = '0';
     
     console.log(`⚡ Quick classification result: ${classification}`);
 
@@ -294,7 +263,6 @@ export async function batchAnalyzeUsers(clerkUserIds: string[]): Promise<Analysi
 export function generateAnalysisReport(results: AnalysisResult[]): string {
   const total = results.length;
   const successful = results.filter(r => r.success).length;
-  const workoutClassifications = results.filter(r => r.classification === 'workout').length;
   const neutralClassifications = results.filter(r => r.classification === '0').length;
   
   const avgProcessingTime = results.reduce((sum, r) => sum + r.processingTime, 0) / total;
@@ -306,7 +274,6 @@ Total Users Analyzed: ${total}
 Successful Analyses: ${successful} (${((successful/total)*100).toFixed(1)}%)
 
 Classification Results:
-- Workout: ${workoutClassifications} (${((workoutClassifications/total)*100).toFixed(1)}%)
 - Neutral: ${neutralClassifications} (${((neutralClassifications/total)*100).toFixed(1)}%)
 
 Performance:
@@ -314,7 +281,7 @@ Performance:
 - Total Messages Analyzed: ${results.reduce((sum, r) => sum + r.messagesAnalyzed, 0)}
 
 Changes Saved:
-- Workout Changes: ${results.filter(r => r.workoutChangesSaved).length}
+- No specialized analysis enabled
   `.trim();
   
   return report;

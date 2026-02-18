@@ -414,11 +414,6 @@ export default function TopCoachApp() {
   }
 
   const handleQuickAction = (action: string) => {
-    if (action === "Generate Workout" || action === "Adjust Intensity") {
-      // Redirect to chatbot page
-      window.location.href = "/chat"
-      return
-    }
 
     const actionMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -536,7 +531,6 @@ export default function TopCoachApp() {
             </div>
             <div className="hidden md:flex space-x-6">
               <Button variant="ghost" asChild>
-                <Link href="/workout">{t('nav.workout')}</Link>
               </Button>
               <Button variant="ghost" asChild>
               </Button>
@@ -755,10 +749,6 @@ export default function TopCoachApp() {
               <span className="text-xs font-semibold group-hover:text-[#cc2e2f] transition-colors duration-200">{t('nav.home')}</span>
             </Button>
             <Button variant="ghost" size="sm" asChild className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
-              <Link href="/workout">
-                <Dumbbell className="w-5 h-5 transition-all duration-200" />
-                <span className="text-xs font-semibold transition-colors duration-200">{t('nav.workout')}</span>
-              </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild className="flex-col space-y-2 min-h-[70px] group transition-all duration-200">
             </Button>
@@ -797,92 +787,6 @@ export default function TopCoachApp() {
       </div>
     )
   }
-
-  // Workout Dashboard Tab
-  if (activeTab === "workout") {
-    return (
-      <div className="min-h-screen p-4 pt-20 pb-20 md:pb-4">
-        <div className="container mx-auto max-w-4xl">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 md:mb-8 gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold font-[var(--font-heading)]">Today's Workout</h1>
-              <p className="text-muted-foreground text-sm md:text-base">Upper Body Strength • 45 min</p>
-            </div>
-            <Button onClick={() => setActiveTab("home")} variant="outline" size="sm" className="w-full sm:w-auto">
-              Back to Home
-            </Button>
-          </div>
-
-          <div className="grid gap-4 md:gap-6">
-            {workoutPlan.map((exercise, index) => (
-              <Card
-                key={index}
-                className={`gradient-black-gray border-border transition-all duration-300 ${exercise.completed ? "opacity-60" : "hover:glow-silver"}`}
-              >
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center space-x-3 md:space-x-4">
-                      <div
-                        className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center ${exercise.completed ? "bg-primary" : "bg-card border-2 border-border"}`}
-                      >
-                        {exercise.completed ? (
-                          <span className="text-primary-foreground font-bold text-sm md:text-base">✓</span>
-                        ) : (
-                          <span className="font-bold text-sm md:text-base">{index + 1}</span>
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="text-lg md:text-xl font-semibold">{exercise.exercise}</h3>
-                        <p className="text-muted-foreground text-sm md:text-base">
-                          {exercise.sets} sets × {exercise.reps} reps • {exercise.rest}s rest
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                        Swap
-                      </Button>
-                      {!exercise.completed && <Button className="bg-white text-black hover:bg-gray-100 w-full sm:w-auto">Start</Button>}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <Card className="mt-8 gradient-black-gray border-border">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Workout Progress</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span>Completion</span>
-                  <span className="text-primary font-bold">50%</span>
-                </div>
-                <div className="w-full bg-secondary rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full" style={{ width: '50%' }}></div>
-                </div>
-                <div className="grid grid-cols-3 gap-4 mt-6">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-primary">2</p>
-                    <p className="text-sm text-muted-foreground">Completed</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-primary">2</p>
-                    <p className="text-sm text-muted-foreground">Remaining</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-primary">22</p>
-                    <p className="text-sm text-muted-foreground">Minutes</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
-  }
-
 
   // Community Tab
   if (activeTab === "community") {

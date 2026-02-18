@@ -36,10 +36,7 @@ const MainNavigation: React.FC = () => {
         </Link>
 
         <nav className={`hidden md:flex items-center ${isRTL ? 'space-x-reverse space-x-8' : 'space-x-8'}`}>
-          <Link href="/workout" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
-            {t('nav.workout')}
-          </Link>
-                              <Link href="/community" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
+                                        <Link href="/community" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
             {t('nav.community')}
           </Link>
         </nav>
