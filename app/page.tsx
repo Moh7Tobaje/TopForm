@@ -422,8 +422,7 @@ export default function TopCoachApp() {
                 {t('hero.badge')}
               </Badge>
               <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold font-[var(--font-heading)] mb-6 md:mb-8 bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-2xl leading-tight tracking-tight">
-                <span className="block">{t('hero.title')}</span>
-                <span className="block text-primary drop-shadow-lg mt-2 md:mt-4">{t('hero.subtitle')}</span>
+                <span className="block text-primary drop-shadow-lg">{t('hero.subtitle')}</span>
               </h1>
               <SignedOut>
                 {activeTab === "home" && (
