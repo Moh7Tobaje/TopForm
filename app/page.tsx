@@ -658,7 +658,6 @@ export default function TopCoachApp() {
                           </Button>
                         </div>
                       </div>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
