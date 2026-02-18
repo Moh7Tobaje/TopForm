@@ -27,27 +27,55 @@ export default function MVPCoachApp() {
     setSelectedFile(file)
   }
 
-  const handleUploadAndAnalyze = () => {
+  const handleUploadAndAnalyze = async () => {
     if (!selectedFile) return
     setIsUploading(true)
     
-    // Simulate analysis
-    setTimeout(() => {
-      const score = Math.floor(Math.random() * 30) + 70 // 70-100 score
-      const feedback = score >= 90 ? 'Excellent form! Keep up the great work.' : 
-                      score >= 80 ? 'Good form with minor improvements needed.' :
-                      'Form needs improvement. Focus on the highlighted areas.'
+    try {
+      const formData = new FormData()
+      formData.append('video', selectedFile)
       
-      const issues = score < 85 ? [
-        'Keep your back straight',
-        'Lower the weight slightly',
-        'Focus on controlled movement'
-      ].slice(0, Math.floor(Math.random() * 3) + 1) : []
+      const response = await fetch('/api/analyze-performance', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Analysis failed')
+      }
+      
+      const result = await response.json()
+      
+      // Parse the analysis result to extract score and feedback
+      const analysisText = result.analysis || 'Analysis could not be completed.'
+      
+      // Simple scoring based on analysis content (this could be improved)
+      let score = 75 // default score
+      let feedback = analysisText
+      let issues: string[] = []
+      
+      // Extract score from analysis if available (basic implementation)
+      if (analysisText.toLowerCase().includes('excellent') || analysisText.toLowerCase().includes('perfect')) {
+        score = 95
+      } else if (analysisText.toLowerCase().includes('good') || analysisText.toLowerCase().includes('solid')) {
+        score = 85
+      } else if (analysisText.toLowerCase().includes('needs') || analysisText.toLowerCase().includes('improve')) {
+        score = 70
+        // Extract improvement suggestions
+        const lines = analysisText.split('\n').filter((line: string) => line.trim())
+        issues = lines.slice(0, 3).map((line: string) => line.replace(/^\d+\.\s*/, '').trim())
+      }
 
       setAnalysisResult({ score, feedback, issues })
-      setIsUploading(false)
       setShowResult(true)
-    }, 2000)
+      
+    } catch (error) {
+      console.error('Analysis error:', error)
+      alert(error instanceof Error ? error.message : 'Analysis failed')
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const closeResult = () => {
