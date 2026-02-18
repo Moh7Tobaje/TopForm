@@ -46,10 +46,88 @@ async function getOrCreateIndex(apiKey: string): Promise<string> {
   return created._id
 }
 
+async function createAsset(apiKey: string, videoUrl: string): Promise<string> {
+  const uploadForm = new FormData()
+  uploadForm.append('index_id', await getOrCreateIndex(apiKey))
+  uploadForm.append('video_url', videoUrl)
+  
+  const taskRes = await twelvelabsFetch('/tasks', apiKey, { 
+    method: 'POST', 
+    body: uploadForm 
+  })
+  
+  if (!taskRes.ok) {
+    const t = await taskRes.text()
+    throw new Error(`Twelve Labs upload failed: ${taskRes.status} ${t}`)
+  }
+  
+  const taskData = (await taskRes.json()) as { _id?: string; video_id?: string; asset_id?: string }
+  const taskId = taskData._id
+  if (!taskId) {
+    throw new Error('Twelve Labs: no task id in response')
+  }
+  
+  // Wait for processing
+  let videoId: string | undefined
+  for (let i = 0; i < POLL_MAX_ATTEMPTS; i++) {
+    await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
+    const statusRes = await twelvelabsFetch(`/tasks/${taskId}`, apiKey)
+    if (!statusRes.ok) continue
+    
+    const statusData = (await statusRes.json()) as { status?: string; video_id?: string; asset_id?: string }
+    if (statusData.video_id) videoId = statusData.video_id
+    else if (statusData.asset_id) videoId = statusData.asset_id
+    
+    if (statusData.status === 'ready') break
+    if (statusData.status === 'failed') {
+      throw new Error('Video processing failed. Try a shorter or clearer video.')
+    }
+  }
+  
+  if (!videoId) {
+    throw new Error('Video processing timed out. Try a shorter video.')
+  }
+  
+  return videoId
+}
+
+async function analyzeVideo(apiKey: string, videoId: string): Promise<string> {
+  const prompt = `You are an expert fitness coach. Analyze this video of an exercise performance in detail.
+
+Provide:
+1) Form and technique – what is correct and what needs improvement.
+2) Specific cues to fix any issues.
+3) Safety considerations.
+4) Tips to optimize the movement.
+
+Be concise and actionable. If the video or context suggests the user prefers Arabic, respond in Arabic; otherwise use English.`
+
+  const analyzeRes = await twelvelabsFetch('/generate', apiKey, {
+    method: 'POST',
+    body: JSON.stringify({
+      model_name: 'pegasus1.2',
+      prompt,
+      video_id: videoId,
+      max_tokens: 1024,
+      temperature: 0.3,
+    }),
+  })
+
+  if (!analyzeRes.ok) {
+    const errorText = await analyzeRes.text()
+    throw new Error(`Analysis failed: ${analyzeRes.status} ${errorText}`)
+  }
+
+  const result = await analyzeRes.json() as { data?: string }
+  return result.data || 'No analysis could be generated.'
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth()
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const apiKey = process.env.TWELVE_LABS_API_KEY
     if (!apiKey || !apiKey.trim()) {
@@ -61,24 +139,26 @@ export async function POST(request: NextRequest) {
     const videoUrl = typeof videoUrlRaw === 'string' ? videoUrlRaw.trim() : ''
     const useUrl = /^https?:\/\/.+\..+/.test(videoUrl)
 
-    const indexId = await getOrCreateIndex(apiKey)
+    let videoId: string
 
-    let taskRes: Response
     if (useUrl) {
-      // Large videos: Twelve Labs fetches from URL (no body size limit on our side)
-      const uploadForm = new FormData()
-      uploadForm.append('index_id', indexId)
-      uploadForm.append('video_url', videoUrl)
-      taskRes = await twelvelabsFetch('/tasks', apiKey, { method: 'POST', body: uploadForm })
+      // Handle URL upload
+      if (!videoUrl) {
+        return NextResponse.json({ error: 'No video URL provided' }, { status: 400 })
+      }
+      videoId = await createAsset(apiKey, videoUrl)
     } else {
+      // Handle file upload
       const file = formData.get('video') as File | Blob | null
       if (!file || typeof (file as Blob).arrayBuffer !== 'function') {
         return NextResponse.json({ error: 'No video file or URL provided' }, { status: 400 })
       }
+      
       const fileSize = (file as Blob).size
       if (!fileSize) {
         return NextResponse.json({ error: 'Video file is empty' }, { status: 400 })
       }
+      
       // Vercel serverless body limit 4.5MB; use 4.4MB to stay under
       const maxBytes = 4.4 * 1024 * 1024
       if (fileSize > maxBytes) {
@@ -86,6 +166,7 @@ export async function POST(request: NextRequest) {
           error: `Video upload limit is 4.4 MB on Vercel. Use "Analyze from URL" below for larger files (e.g. link from Google Drive, Dropbox).`,
         }, { status: 400 })
       }
+      
       if (fileSize > 2 * 1024 * 1024 * 1024) {
         return NextResponse.json({ error: 'Video must be under 2GB' }, { status: 400 })
       }
@@ -97,107 +178,55 @@ export async function POST(request: NextRequest) {
         : 'video.webm'
 
       const uploadForm = new FormData()
-      uploadForm.append('index_id', indexId)
+      uploadForm.append('index_id', await getOrCreateIndex(apiKey))
       uploadForm.append('video_file', blob, fileName)
-      taskRes = await twelvelabsFetch('/tasks', apiKey, { method: 'POST', body: uploadForm })
-    }
-    if (!taskRes.ok) {
-      const t = await taskRes.text()
-      return NextResponse.json(
-        { error: `Twelve Labs upload failed: ${taskRes.status}`, details: t },
-        { status: 502 }
-      )
-    }
-    const taskData = (await taskRes.json()) as { _id?: string; video_id?: string; asset_id?: string; video?: string; status?: string }
-    const taskId = taskData._id
-    if (!taskId) {
-      return NextResponse.json({ error: 'Twelve Labs: no task id in response' }, { status: 502 })
-    }
-
-    let videoId: string | undefined = taskData.video_id || taskData.asset_id || (typeof taskData.video === 'string' ? taskData.video : undefined)
-    for (let i = 0; i < POLL_MAX_ATTEMPTS; i++) {
-      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
-      const statusRes = await twelvelabsFetch(`/tasks/${taskId}`, apiKey)
-      if (!statusRes.ok) continue
-      const statusData = (await statusRes.json()) as { status?: string; video_id?: string; asset_id?: string; video?: string }
-      if (statusData.video_id) videoId = statusData.video_id
-      else if (statusData.asset_id) videoId = statusData.asset_id
-      else if (typeof statusData.video === 'string') videoId = statusData.video
-      if (statusData.status === 'ready') break
-      if (statusData.status === 'failed') {
+      
+      const taskRes = await twelvelabsFetch('/tasks', apiKey, { method: 'POST', body: uploadForm })
+      if (!taskRes.ok) {
+        const t = await taskRes.text()
         return NextResponse.json(
-          { error: 'Video processing failed. Try a shorter or clearer video.' },
-          { status: 422 }
+          { error: `Twelve Labs upload failed: ${taskRes.status}`, details: t },
+          { status: 502 }
+        )
+      }
+      
+      const taskData = (await taskRes.json()) as { _id?: string; video_id?: string; asset_id?: string }
+      const taskId = taskData._id
+      if (!taskId) {
+        return NextResponse.json({ error: 'Twelve Labs: no task id in response' }, { status: 502 })
+      }
+
+      // Wait for processing
+      for (let i = 0; i < POLL_MAX_ATTEMPTS; i++) {
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
+        const statusRes = await twelvelabsFetch(`/tasks/${taskId}`, apiKey)
+        if (!statusRes.ok) continue
+        
+        const statusData = (await statusRes.json()) as { status?: string; video_id?: string; asset_id?: string }
+        if (statusData.video_id) videoId = statusData.video_id
+        else if (statusData.asset_id) videoId = statusData.asset_id
+        
+        if (statusData.status === 'ready') break
+        if (statusData.status === 'failed') {
+          return NextResponse.json(
+            { error: 'Video processing failed. Try a shorter or clearer video.' },
+            { status: 422 }
+          )
+        }
+      }
+      
+      if (!videoId) {
+        return NextResponse.json(
+          { error: 'Video processing timed out. Try a shorter video.' },
+          { status: 504 }
         )
       }
     }
-    if (!videoId) {
-      return NextResponse.json(
-        { error: 'Video processing timed out. Try a shorter video.' },
-        { status: 504 }
-      )
-    }
 
-    const prompt = `You are an expert fitness coach. Analyze this video of an exercise performance in detail.
+    // Analyze the video
+    const analysis = await analyzeVideo(apiKey, videoId)
+    return NextResponse.json({ analysis })
 
-Provide:
-1) Form and technique – what is correct and what needs improvement.
-2) Specific cues to fix any issues.
-3) Safety considerations.
-4) Tips to optimize the movement.
-
-Be concise and actionable. If the video or context suggests the user prefers Arabic, respond in Arabic; otherwise use English.`
-
-    const analyzeRes = await twelvelabsFetch('/analyze', apiKey, {
-      method: 'POST',
-      body: JSON.stringify({
-        video_id: videoId,
-        prompt,
-        stream: false,
-        temperature: 0.3,
-        max_tokens: 4096,
-      }),
-    })
-
-    const analyzeText = await analyzeRes.text()
-    if (!analyzeRes.ok) {
-      let errMsg = `Analysis failed (${analyzeRes.status})`
-      try {
-        const errJson = JSON.parse(analyzeText) as { message?: string; code?: string; error?: string }
-        const msg = errJson.message || errJson.error || errJson.code
-        if (msg) errMsg = String(msg)
-        if (errJson.code === 'index_not_supported_for_generate') {
-          errMsg = 'This index does not support analysis. It must use a Pegasus engine.'
-        } else if (errJson.code === 'token_limit_exceeded' || /token_limit/i.test(String(msg))) {
-          errMsg = 'Video too long. Try a shorter clip (under 1 minute).'
-        }
-      } catch {
-        if (analyzeText) errMsg = analyzeText.slice(0, 200)
-      }
-      return NextResponse.json({ error: errMsg }, { status: analyzeRes.status >= 400 && analyzeRes.status < 500 ? analyzeRes.status : 502 })
-    }
-
-    const gen = (() => {
-      try {
-        return JSON.parse(analyzeText) as Record<string, unknown>
-      } catch {
-        return {}
-      }
-    })()
-
-    // /v1.3/analyze non‑stream: { data: string, id, finish_reason, usage }
-    let analysis = ''
-    if (typeof gen.data === 'string') {
-      analysis = gen.data
-    } else if (gen.data && typeof gen.data === 'object' && gen.data !== null) {
-      const d = gen.data as Record<string, unknown>
-      analysis = (typeof d.generated_text === 'string' ? d.generated_text : '') || (typeof d.text === 'string' ? d.text : '')
-    }
-    if (!analysis) {
-      analysis = (typeof gen.generated_text === 'string' ? gen.generated_text : '') || (typeof gen.text === 'string' ? gen.text : '') || (typeof gen.summary === 'string' ? gen.summary : '')
-    }
-
-    return NextResponse.json({ analysis: analysis.trim() || 'No analysis could be generated.' })
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown'
     console.error('analyze-video error:', e)
