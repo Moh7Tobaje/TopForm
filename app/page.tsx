@@ -2,12 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { PerformanceResultCards } from "@/components/analysis/PerformanceResultCards"
 
 export default function MVPCoachApp() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [showResult, setShowResult] = useState(false)
-  const [analysisResult, setAnalysisResult] = useState<string>('')
+  const [analysisResult, setAnalysisResult] = useState<any>(null)
 
   const supportedExercises = ["Squat", "Deadlift", "Bench Press", "OHP", "Rows"]
 
@@ -39,8 +40,8 @@ export default function MVPCoachApp() {
       
       const result = await response.json()
       
-      // Set the raw analysis result as text
-      setAnalysisResult(result.analysis || 'No analysis available')
+      // Set the structured analysis result
+      setAnalysisResult(result.analysis)
       setShowResult(true)
       
     } catch (error) {
@@ -54,6 +55,7 @@ export default function MVPCoachApp() {
   const closeResult = () => {
     setShowResult(false)
     setSelectedFile(null)
+    setAnalysisResult(null)
   }
 
   return (
@@ -138,12 +140,12 @@ export default function MVPCoachApp() {
       {/* Analysis Result Modal */}
       {showResult && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-900 rounded-xl p-6 max-w-2xl w-full border border-gray-700 max-h-[80vh] overflow-y-auto">
+          <div className="bg-gray-900 rounded-xl p-6 max-w-4xl w-full border border-gray-700 max-h-[90vh] overflow-y-auto">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-white mb-4">Analysis Result</h2>
-              <pre className="text-left text-sm text-gray-300 bg-gray-800 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
-                {analysisResult}
-              </pre>
+              <h2 className="text-2xl font-bold text-white mb-6">Analysis Result</h2>
+              <div className="text-left">
+                <PerformanceResultCards analysisResult={analysisResult} />
+              </div>
               <Button
                 onClick={closeResult}
                 className="bg-red-600 hover:bg-red-700 text-white mt-6"
