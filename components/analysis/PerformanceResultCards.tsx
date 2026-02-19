@@ -149,7 +149,7 @@ const PerformanceResultCardsInner: React.FC<PerformanceResultCardsProps> = ({ an
           <div className="text-4xl font-bold mb-1">{heroScore.totalScore || 0}</div>
           <div className="w-full bg-gray-700/50 rounded-full h-2 mb-2">
             <div 
-              className={`h-2 rounded-full ${getColorClasses(heroScore.color || 'gray')}`}
+              className="h-2 rounded-full bg-blue-500"
               style={{ width: `${heroScore.percentage || 0}%` }}
             />
           </div>
@@ -174,7 +174,7 @@ const PerformanceResultCardsInner: React.FC<PerformanceResultCardsProps> = ({ an
                 </div>
                 <div className="w-full bg-gray-700/50 rounded-full h-1.5 mb-1">
                   <div 
-                    className={`h-1.5 rounded-full ${getColorClasses((phase.score || 0) >= 70 ? 'green' : (phase.score || 0) >= 50 ? 'yellow' : (phase.score || 0) >= 40 ? 'orange' : 'red')}`}
+                    className="h-1.5 rounded-full bg-purple-500"
                     style={{ width: `${phase.score || 0}%` }}
                   />
                 </div>
