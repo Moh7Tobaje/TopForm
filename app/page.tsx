@@ -139,16 +139,16 @@ export default function MVPCoachApp() {
 
       {/* Analysis Result Modal */}
       {showResult && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-900 rounded-xl p-6 max-w-4xl w-full border border-gray-700 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-gray-900 rounded-lg p-3 sm:p-4 max-w-2xl w-full border border-gray-700/50 max-h-[85vh] overflow-y-auto">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-white mb-6">Analysis Result</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-white mb-3">Analysis Result</h2>
               <div className="text-left">
                 <PerformanceResultCards analysisResult={analysisResult} />
               </div>
               <Button
                 onClick={closeResult}
-                className="bg-red-600 hover:bg-red-700 text-white mt-6"
+                className="bg-red-600 hover:bg-red-700 text-white mt-3 text-sm"
               >
                 Analyze Another Video
               </Button>
