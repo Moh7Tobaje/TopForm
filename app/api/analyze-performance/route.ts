@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 import fs from 'fs'
+import { processAnalysisWithGLM } from '../../../lib/performance-processor'
 
 const TWELVELABS_BASE = process.env.TWELVELABS_API_URL || 'https://api.twelvelabs.io/v1.3'
 const INDEX_NAME = process.env.TWELVELABS_INDEX_NAME || 'topcoach-analysis'
@@ -273,8 +274,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Analyze the video
-    const analysis = await analyzeVideo(apiKey, videoId)
-    return NextResponse.json({ analysis })
+    console.log('🎥 Starting video analysis...')
+    const rawAnalysis = await analyzeVideo(apiKey, videoId)
+    console.log('📝 Raw analysis received, processing with GLM...')
+    
+    // Process the analysis with GLM to get structured JSON
+    const structuredResult = await processAnalysisWithGLM(rawAnalysis)
+    console.log('✅ Analysis processed successfully with GLM')
+    
+    return NextResponse.json({ 
+      analysis: structuredResult,
+      rawAnalysis: rawAnalysis // Include raw analysis for debugging/reference
+    })
 
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown'
