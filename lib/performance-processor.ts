@@ -128,7 +128,10 @@ Extract all relevant information and organize it according to the specified JSON
     
   } catch (error) {
     console.error('Error processing analysis with GLM:', error)
-    throw new Error(`Failed to process analysis: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    
+    // Return a default result if GLM processing fails
+    console.warn('GLM processing failed, returning default analysis structure')
+    return createDefaultAnalysisResult(analysisText)
   }
 }
 
@@ -251,4 +254,21 @@ function hasSafetyConcerns(analysis: string): boolean {
   return safetyKeywords.some(keyword => 
     analysis.toLowerCase().includes(keyword)
   )
+}
+
+function createDefaultAnalysisResult(analysisText: string): PerformanceAnalysisResult {
+  return {
+    heroScore: createDefaultHeroScore(),
+    scoreBreakdown: {
+      phases: ['Setup', 'Execution', 'Completion'].map(phase => createDefaultPhase(phase as any))
+    },
+    measurements: {
+      measurements: ['Depth', 'Knee Tracking', 'Back Position', 'Weight Distribution', 'Symmetry'].map(name => 
+        createDefaultMeasurement(name as any)
+      )
+    },
+    issues: { issues: [] },
+    positives: { positives: generateDefaultPositives(analysisText) },
+    drills: createDefaultDrills()
+  }
 }

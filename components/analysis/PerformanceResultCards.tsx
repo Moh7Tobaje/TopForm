@@ -1,56 +1,7 @@
 "use client"
 
 import React from 'react'
-
-interface PerformanceAnalysisResult {
-  heroScore: {
-    totalScore: number;
-    percentage: number;
-    level: 'beginner' | 'intermediate' | 'advanced' | 'elite';
-    summary: string;
-    color: 'green' | 'yellow' | 'orange' | 'red';
-  };
-  scoreBreakdown: {
-    phases: Array<{
-      phase: 'Setup' | 'Execution' | 'Completion';
-      score: number;
-      icon: 'check' | 'warning' | 'error';
-      observations: string[];
-    }>;
-  };
-  measurements: {
-    measurements: Array<{
-      name: 'Depth' | 'Knee Tracking' | 'Back Position' | 'Weight Distribution' | 'Symmetry';
-      value: string;
-      status: 'good' | 'attention' | 'warning' | 'problem';
-    }>;
-  };
-  issues: {
-    issues: Array<{
-      priority: number;
-      name: string;
-      description: string;
-      severity: 'critical' | 'moderate' | 'minor';
-      solution: string;
-      cue: string;
-    }>;
-  };
-  positives: {
-    positives: string[];
-  };
-  drills: {
-    topFocus: string;
-    drills: Array<{
-      name: string;
-      description?: string;
-      videoLink?: string;
-    }>;
-  };
-  safetyAlert?: {
-    message: string;
-    recommendation: string;
-  };
-}
+import type { PerformanceAnalysisResult } from '@/types/performance-analysis'
 
 interface PerformanceResultCardsProps {
   analysisResult: PerformanceAnalysisResult;

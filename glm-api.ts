@@ -2,22 +2,6 @@
 const GLM_API_KEY = process.env.GLM_API_KEY
 const GLM_API_URL = process.env.GLM_API_URL || 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 
-// Validate required environment variables
-if (!GLM_API_KEY) {
-  console.error('❌ Missing GLM_API_KEY environment variable')
-  throw new Error('GLM_API_KEY environment variable is required. Please set it in your .env.local file.')
-}
-
-if (!GLM_API_URL) {
-  console.error('❌ Missing GLM_API_URL environment variable')
-  throw new Error('GLM_API_URL environment variable is required. Please set it in your .env.local file.')
-}
-
-// Log configuration (without exposing the key)
-console.log('🔧 GLM API Configuration:')
-console.log(`📡 API URL: ${GLM_API_URL}`)
-console.log(`🔑 API Key: ${GLM_API_KEY ? '✅ Configured' : '❌ Missing'}`)
-
 export interface GLMMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
@@ -38,6 +22,17 @@ export async function getGLMAnswer(
   userQuestion: string,
   contextMessages: GLMMessage[] = []
 ): Promise<string> {
+  // Check API key at runtime
+  if (!GLM_API_KEY) {
+    console.error('❌ Missing GLM_API_KEY environment variable')
+    throw new Error('GLM_API_KEY environment variable is required. Please set it in your environment variables.')
+  }
+
+  // Log configuration (without exposing the key)
+  console.log('🔧 GLM API Configuration:')
+  console.log(`📡 API URL: ${GLM_API_URL}`)
+  console.log(`🔑 API Key: ✅ Configured`)
+
   const headers = {
     "Authorization": `Bearer ${GLM_API_KEY}`,
     "Content-Type": "application/json"
