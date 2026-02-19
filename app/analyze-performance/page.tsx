@@ -6,6 +6,7 @@ import { Loader2, Video, Upload, X, Square } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
 import { Input } from "@/components/ui/input"
 import { useLanguage } from "@/contexts/LanguageContext"
+import { PerformanceResultCards } from "@/components/analysis/PerformanceResultCards"
 
 export default function AnalyzePerformancePage() {
   const { user, isLoaded } = useUser()
@@ -15,7 +16,7 @@ export default function AnalyzePerformancePage() {
   const [analyzeOpen, setAnalyzeOpen] = useState(true)
   const [analyzeStep, setAnalyzeStep] = useState<'picker' | 'record' | 'analyzing' | 'result' | 'error'>('picker')
   const [analyzeError, setAnalyzeError] = useState<string | null>(null)
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null)
+  const [analysisResult, setAnalysisResult] = useState<any>(null)
   const [isRecording, setIsRecording] = useState(false)
   const [videoUrlInput, setVideoUrlInput] = useState('')
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -103,6 +104,7 @@ export default function AnalyzePerformancePage() {
       }
       
       const result = await response.json()
+      console.log('API Response (file upload):', result) // Debug log
       setAnalysisResult(result.analysis)
       setAnalyzeStep('result')
     } catch (error) {
@@ -131,6 +133,7 @@ export default function AnalyzePerformancePage() {
       }
       
       const result = await response.json()
+      console.log('API Response (URL):', result) // Debug log
       setAnalysisResult(result.analysis)
       setAnalyzeStep('result')
     } catch (error) {
@@ -253,11 +256,7 @@ export default function AnalyzePerformancePage() {
 
               {analyzeStep === 'result' && analysisResult && (
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-[#2d2e2e]/80 border border-[#3d3e3e] max-h-80 overflow-y-auto">
-                    <div className="prose prose-invert max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: analysisResult }} />
-                    </div>
-                  </div>
+                  <PerformanceResultCards analysisResult={analysisResult} />
                   <div className="flex gap-3">
                     <Button onClick={() => setAnalyzeStep('picker')} variant="outline" className="flex-1">
                       Analyze Another Video
