@@ -61,18 +61,7 @@ export default function MVPCoachApp() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
-      <header className="p-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
-            <span className="text-white font-bold text-sm">FA</span>
-          </div>
-          <span className="font-semibold">FormAI</span>
-        </div>
-        <Button variant="ghost" size="sm" className="text-gray-400">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4 4m4-4H3m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </Button>
+      <header className="p-4 flex justify-center items-center">
       </header>
 
       {/* Main Content */}
@@ -114,18 +103,7 @@ export default function MVPCoachApp() {
             </label>
           </div>
 
-          {/* Exercises */}
-          <div>
-            <p className="text-sm text-gray-500 mb-3">Supported exercises:</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {supportedExercises.map((exercise) => (
-                <span key={exercise} className="px-3 py-1 bg-gray-800 text-gray-300 rounded-full text-sm">
-                  {exercise}
-                </span>
-              ))}
-            </div>
-          </div>
-
+          
           {/* Button */}
           <Button
             onClick={handleUploadAndAnalyze}
