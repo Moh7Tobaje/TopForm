@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { auth } from "@clerk/nextjs/server"
 import { PerformanceResultCards } from "@/components/analysis/PerformanceResultCards"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
