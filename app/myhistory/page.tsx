@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useUser } from "@clerk/nextjs"
 import { PerformanceResultCards } from "@/components/analysis/PerformanceResultCards"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
@@ -14,14 +15,26 @@ interface AnalysisResult {
 }
 
 export default function MyHistoryPage() {
+  const { user, isLoaded } = useUser()
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set())
 
   useEffect(() => {
-    fetchAnalysisResults()
-  }, [])
+    // Check if Clerk is available
+    const isClerkAvailable = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY
+    
+    if (!isClerkAvailable) {
+      // Clerk not configured, fetch all results or use mock data
+      fetchAllAnalysisResults()
+      return
+    }
+
+    if (isLoaded && user) {
+      fetchAnalysisResults()
+    }
+  }, [isLoaded, user])
 
   const toggleCard = (id: number) => {
     setExpandedCards(prev => {
@@ -36,6 +49,36 @@ export default function MyHistoryPage() {
   }
 
   const fetchAnalysisResults = async () => {
+    if (!user) {
+      setError('User not authenticated')
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('analysis_results')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('timestamp', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching analysis results:', error)
+        setError('Failed to load analysis results')
+        return
+      }
+
+      setAnalysisResults(data || [])
+    } catch (err) {
+      console.error('Error:', err)
+      setError('An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchAllAnalysisResults = async () => {
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -58,12 +101,45 @@ export default function MyHistoryPage() {
     }
   }
 
+  // Check if Clerk is available
+  const isClerkAvailable = typeof window !== 'undefined' && (
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+    process.env.CLERK_PUBLISHABLE_KEY
+  )
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <p className="text-gray-400">Loading your analysis history...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isClerkAvailable && !user) {
+    // Clerk not configured, but we should still show results
+    // Continue to render the page
+  } else if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading authentication...</p>
+        </div>
+      </div>
+    )
+  } else if (!user) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Please sign in to view your analysis history</p>
+          <Link href="/sign-in">
+            <Button className="bg-red-600 hover:bg-red-700">
+              Sign In
+            </Button>
+          </Link>
         </div>
       </div>
     )
@@ -99,7 +175,10 @@ export default function MyHistoryPage() {
       {/* Main Content */}
       <main className="container mx-auto p-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center">My Analysis History</h1>
+          <h1 className="text-3xl font-bold mb-8 text-center">
+            My Analysis History 
+            {!isClerkAvailable && <span className="text-sm text-yellow-400 ml-2">(Demo Mode)</span>}
+          </h1>
           
           {analysisResults.length === 0 ? (
             <div className="text-center py-16">
