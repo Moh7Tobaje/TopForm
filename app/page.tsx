@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { PerformanceResultCards } from "@/components/analysis/PerformanceResultCards"
+import Link from "next/link"
 
 export default function MVPCoachApp() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -104,6 +105,18 @@ export default function MVPCoachApp() {
           </div>
 
           
+          {/* My History Button */}
+          <Link href="/My History">
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-base font-medium rounded-lg w-full max-w-md flex items-center justify-center space-x-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+              <span>My History</span>
+            </Button>
+          </Link>
+
           {/* Button */}
           <Button
             onClick={handleUploadAndAnalyze}

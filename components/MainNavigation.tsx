@@ -27,7 +27,7 @@ const MainNavigation: React.FC = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
-          <span className="text-xl font-bold text-primary">TopCoach</span>
+          <span className="text-xl font-bold text-primary">Top FormAi</span>
         </Link>
 
         <nav className={`hidden md:flex items-center ${isRTL ? 'space-x-reverse space-x-8' : 'space-x-8'}`}>
@@ -41,11 +41,6 @@ const MainNavigation: React.FC = () => {
 
           {/* Auth Buttons */}
           <ClerkErrorBoundary>
-            <SignedIn>
-              <Button variant="ghost" size="sm" className="hidden md:block">
-                {t('nav.profile')}
-              </Button>
-            </SignedIn>
             <SignedOut>
               <Link href="/sign-in">
                 <Button variant="ghost" size="sm" className="hidden md:block">

@@ -4,6 +4,7 @@ import { readFile } from 'fs/promises'
 import { join } from 'path'
 import fs from 'fs'
 import { processAnalysisWithGLM } from '../../../lib/performance-processor'
+import { supabaseService } from '../../../lib/supabase'
 
 const TWELVELABS_BASE = process.env.TWELVELABS_API_URL || 'https://api.twelvelabs.io/v1.3'
 const INDEX_NAME = process.env.TWELVELABS_INDEX_NAME || 'topcoach-analysis'
@@ -103,6 +104,41 @@ async function createAsset(apiKey: string, videoUrl: string): Promise<string> {
   }
   
   return videoId
+}
+
+async function saveAnalysisResult(userId: string, analysisResult: any): Promise<void> {
+  try {
+    // Get user_id from clerk_user_id
+    const { data: userData, error: userError } = await supabaseService
+      .from('users')
+      .select('user_id')
+      .eq('clerk_user_id', userId)
+      .single()
+
+    if (userError || !userData) {
+      console.error('Error fetching user:', userError)
+      throw new Error('User not found')
+    }
+
+    // Save analysis result
+    const { error: insertError } = await supabaseService
+      .from('analysis_results')
+      .insert({
+        user_id: userData.user_id,
+        analysis_result: analysisResult,
+        timestamp: new Date().toISOString()
+      })
+
+    if (insertError) {
+      console.error('Error saving analysis result:', insertError)
+      throw new Error('Failed to save analysis result')
+    }
+
+    console.log('✅ Analysis result saved to database')
+  } catch (error) {
+    console.error('Error in saveAnalysisResult:', error)
+    throw error
+  }
 }
 
 async function analyzeVideo(apiKey: string, videoId: string): Promise<string> {
@@ -281,6 +317,14 @@ export async function POST(request: NextRequest) {
     // Process the analysis with GLM to get structured JSON
     const structuredResult = await processAnalysisWithGLM(rawAnalysis)
     console.log('✅ Analysis processed successfully with GLM')
+    
+    // Save the analysis result to database
+    try {
+      await saveAnalysisResult(userId, structuredResult)
+    } catch (saveError) {
+      console.error('Failed to save analysis result:', saveError)
+      // Continue with response even if save fails
+    }
     
     return NextResponse.json({ 
       analysis: structuredResult,

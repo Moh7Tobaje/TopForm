@@ -42,7 +42,7 @@ const tajawal = Tajawal({
 })
 
 export const metadata: Metadata = {
-  title: "Top Coach - AI-Powered Fitness Coaching",
+  title: "Top FormAi - AI-Powered Fitness Coaching",
   description:
     "Transform your fitness journey with AI-powered coaching, personalized workouts, and smart nutrition planning.",
   generator: "v0.app",
