@@ -18,10 +18,23 @@ export default function MyHistoryPage() {
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     fetchAnalysisResults()
   }, [])
+
+  const toggleCard = (id: number) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
 
   const fetchAnalysisResults = async () => {
     try {
@@ -105,27 +118,60 @@ export default function MyHistoryPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-4">
               {analysisResults.map((result, index) => (
-                <div key={result.id} className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">
-                      Analysis #{analysisResults.length - index}
-                    </h3>
-                    <div className="text-sm text-gray-400">
-                      {new Date(result.timestamp).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                <div key={result.id} className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
+                  {/* Card Header - Always Visible */}
+                  <div 
+                    className="p-4 cursor-pointer hover:bg-gray-800 transition-colors"
+                    onClick={() => toggleCard(result.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white font-bold">
+                            #{analysisResults.length - index}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold">Analysis Result</h3>
+                          <p className="text-sm text-gray-400">
+                            {new Date(result.timestamp).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-400">
+                          {expandedCards.has(result.id) ? 'Click to collapse' : 'Click to expand'}
+                        </span>
+                        <svg 
+                          className={`w-5 h-5 text-gray-400 transition-transform ${
+                            expandedCards.has(result.id) ? 'rotate-180' : ''
+                          }`} 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="text-left">
-                    <PerformanceResultCards analysisResult={result.analysis_result} />
-                  </div>
+                  {/* Card Content - Expandable */}
+                  {expandedCards.has(result.id) && (
+                    <div className="border-t border-gray-700 p-6">
+                      <div className="text-left">
+                        <PerformanceResultCards analysisResult={result.analysis_result} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
