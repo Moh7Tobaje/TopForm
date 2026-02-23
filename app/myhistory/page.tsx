@@ -57,10 +57,37 @@ export default function MyHistoryPage() {
 
     try {
       setLoading(true)
+      
+      // First, get the user's internal ID from the users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('user_id')
+        .eq('clerk_user_id', user.id)
+        .single()
+
+      if (userError) {
+        console.error('Error fetching user data:', userError)
+        // Try to fetch all results if user lookup fails (for demo mode)
+        const { data: allData, error: allError } = await supabase
+          .from('analysis_results')
+          .select('*')
+          .order('timestamp', { ascending: false })
+
+        if (allError) {
+          console.error('Error fetching all analysis results:', allError)
+          setError('Failed to load analysis results')
+          return
+        }
+
+        setAnalysisResults(allData || [])
+        return
+      }
+
+      // Now fetch the analysis results using the internal user_id
       const { data, error } = await supabase
         .from('analysis_results')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userData.user_id)
         .order('timestamp', { ascending: false })
 
       if (error) {
@@ -81,20 +108,23 @@ export default function MyHistoryPage() {
   const fetchAllAnalysisResults = async () => {
     try {
       setLoading(true)
+      console.log('Fetching all analysis results (demo mode)')
+      
       const { data, error } = await supabase
         .from('analysis_results')
         .select('*')
         .order('timestamp', { ascending: false })
 
       if (error) {
-        console.error('Error fetching analysis results:', error)
-        setError('Failed to load analysis results')
+        console.error('Error fetching all analysis results:', error)
+        setError(`Failed to load analysis results: ${error.message}`)
         return
       }
 
+      console.log('Fetched results:', data?.length || 0, 'items')
       setAnalysisResults(data || [])
     } catch (err) {
-      console.error('Error:', err)
+      console.error('Unexpected error:', err)
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)
@@ -148,11 +178,36 @@ export default function MyHistoryPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={fetchAnalysisResults} className="bg-red-600 hover:bg-red-700">
-            Try Again
-          </Button>
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="w-16 h-16 bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Error Loading Data</h2>
+          <p className="text-red-400 mb-4 text-sm">{error}</p>
+          <div className="space-y-2">
+            <Button 
+              onClick={() => {
+                setError(null)
+                if (isClerkAvailable && user) {
+                  fetchAnalysisResults()
+                } else {
+                  fetchAllAnalysisResults()
+                }
+              }} 
+              className="bg-red-600 hover:bg-red-700 w-full"
+            >
+              Try Again
+            </Button>
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline" 
+              className="border-gray-600 text-gray-400 hover:text-white w-full"
+            >
+              Reload Page
+            </Button>
+          </div>
         </div>
       </div>
     )

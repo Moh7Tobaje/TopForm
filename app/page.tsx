@@ -106,7 +106,7 @@ export default function MVPCoachApp() {
 
           
           {/* My History Button */}
-          <Link href="/My History">
+          <Link href="/myhistory" className="self-end">
             <Button
               className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-base font-medium rounded-lg w-full max-w-md flex items-center justify-center space-x-2"
             >
